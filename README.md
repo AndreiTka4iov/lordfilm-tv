@@ -84,6 +84,10 @@ Ports are bound to localhost by default. For LAN access, set `HOST_BIND=0.0.0.0`
 
 ## Android TV APK
 
+[Download APK — 0.2.0 Preview 1](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk) · [Release notes and SHA-256](https://github.com/AndreiTka4iov/lordfilm-tv/releases/tag/v0.2.0-preview.1)
+
+This is a test-key-signed preview (`tv.lordfilm.app.debug`). Transfer the APK to your TV and open it with a file manager; allow installation from that app when prompted. Requires Android 7.0+ and WebView/Chromium 111+.
+
 The Android app runs independently: the APK includes the interface, and Kotlin fetches catalog data, search results, details, and playback information directly from external sources. It does not require a Mac, Docker, Node.js, your own server, or an API URL setting. Internet access is required for catalog data, artwork, and video.
 
 The `android/` project uses Kotlin and WebView, with Android 7.0 (API 24) as the minimum OS version. It requires Android System WebView/Chromium **111 or newer**. The Android version alone does not guarantee compatibility: devices with an older WebView, such as version 83, receive a prompt to update the engine. To build the app, install JDK 17 and Android SDK Platform 36 through Android Studio, then configure `ANDROID_HOME` or a local `android/local.properties` file (`sdk.dir=…`). On macOS:
