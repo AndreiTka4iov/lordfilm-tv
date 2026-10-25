@@ -44,7 +44,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
-      - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:android:web

@@ -1,26 +1,26 @@
 # LordFilm TV
 
-Самостоятельное Android TV-приложение и веб-клиент каталога фильмов и сериалов: управление пультом, поиск и собственный HLS-плеер. Next.js, React, TypeScript, Mantine и Tailwind CSS. Интерфейс на русском языке.
+A standalone Android TV app and web client for browsing movies and TV shows, with remote control navigation, search, and a built-in HLS player. Built with Next.js, React, TypeScript, Mantine, and Tailwind CSS. The interface is currently in Russian.
 
-| Вариант     | Как работает                                       | Собственный сервер            |
-| ----------- | -------------------------------------------------- | ----------------------------- |
-| Android APK | Интерфейс и работа с источниками внутри приложения | Не нужен                      |
-| Веб-версия  | Next.js frontend и отдельный Node.js API           | Нужен для каталога и playback |
+| Version     | How it works                                             | Own server                                 |
+| ----------- | -------------------------------------------------------- | ------------------------------------------ |
+| Android APK | The interface and source integrations run inside the app | Not required                               |
+| Web app     | Next.js frontend with a separate Node.js API             | Required for catalog and playback requests |
 
-## Возможности
+## Features
 
-- Главная с тремя подборками по 20 карточек, страницы фильмов и сериалов.
-- Поиск по названиям и актёрам: debounce 500 мс, немедленный запуск по Enter, голосовой ввод при поддержке браузером.
-- Управление стрелками, OK и Back, раскрытие меню по фокусу, возврат к выбранной карточке.
-- HLS-плеер: качество, озвучка, сезоны, серии и переход к следующей серии.
-- Светлая и тёмная темы, локально поставляемый шрифт Onest.
-- Самостоятельный Android APK; отдельный API для веб-версии, Next standalone и статический export.
+- Home screen with three collections of 20 titles each, plus movie and TV show detail pages.
+- Search by title and actor, with a 500 ms debounce, immediate submission on Enter, and voice input where supported by the browser.
+- Arrow, OK, and Back navigation, a sidebar that expands on focus, and focus restoration when returning to a selected title.
+- HLS player with quality and audio track selection, seasons, episodes, and next-episode playback.
+- Light and dark themes with the locally bundled Onest font.
+- Standalone Android APK, a separate API for the web app, Next.js standalone builds, and static export.
 
-Проект находится в разработке. Разделы меню, кроме главной и поиска, пока содержат заглушки. Авторизация и нативный плеер не реализованы; Android APK использует веб-плеер. Совместимость аппаратного пульта и декодера проверяйте на целевом устройстве. Для Tailwind CSS 4 нужен современный браузер/WebView; голосовой ввод зависит от браузера, разрешения микрофона и безопасного контекста.
+The project is under development. Menu sections other than Home and Search currently contain placeholders. Authentication and a native video player are not implemented; the Android APK uses the web player. Test physical remote controls and hardware decoding on your target device. Tailwind CSS 4 requires a modern browser or WebView. Voice input depends on browser support, microphone permission, and a secure context.
 
-## Локальный запуск веб-версии
+## Run the web app locally
 
-Нужны Node.js 24 (точная версия в `.nvmrc`) и npm 11/12.
+Requires Node.js 24 (the exact version is in `.nvmrc`) and npm 11 or 12.
 
 ```sh
 git clone https://github.com/AndreiTka4iov/lordfilm-tv.git
@@ -31,62 +31,62 @@ cp .env.example .env
 npm run api:dev
 ```
 
-В другом терминале:
+In another terminal:
 
 ```sh
 npm run dev
 ```
 
-Откройте http://localhost:3000. API слушает http://localhost:3001. Оба процесса нужны для работы каталога. Next.js и команды API читают локальный `.env`; он исключён из Git.
+Open http://localhost:3000. The API listens on http://localhost:3001. Both processes are required for the web catalog. Next.js and the API commands read the local `.env` file, which is excluded from Git.
 
-### Настройки
+### Configuration
 
-| Переменная                    | Значение по умолчанию / назначение                                                            |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| `LORDFILM_ORIGIN`             | Адрес источника из `.env.example`; при смене домена обновите его                              |
-| `API_HOST`                    | `127.0.0.1`; для прямого доступа из LAN — `0.0.0.0`                                           |
-| `API_PORT`                    | `3001` — порт локального API                                                                  |
-| `API_CORS_ORIGIN`             | `http://localhost:3000` — точный origin frontend, включая порт                                |
-| `NEXT_PUBLIC_CATALOG_API_URL` | Пусто: хост открытой страницы, порт `3001`. Можно указать HTTPS URL или префикс reverse proxy |
-| `HOST_BIND`                   | `127.0.0.1` — адрес публикации Docker-портов                                                  |
-| `FRONTEND_OUT_PORT`           | `3000` — внешний Docker-порт frontend                                                         |
-| `API_OUT_PORT`                | `3001` — внешний Docker-порт API                                                              |
+| Variable                      | Default / purpose                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `LORDFILM_ORIGIN`             | Source origin from `.env.example`; update it if the source domain changes                                |
+| `API_HOST`                    | `127.0.0.1`; use `0.0.0.0` for direct LAN access                                                         |
+| `API_PORT`                    | `3001` — local API port                                                                                  |
+| `API_CORS_ORIGIN`             | `http://localhost:3000` — exact frontend origin, including the port                                      |
+| `NEXT_PUBLIC_CATALOG_API_URL` | Empty: use the current page's hostname on port `3001`. Accepts an HTTPS URL or reverse proxy path prefix |
+| `HOST_BIND`                   | `127.0.0.1` — bind address for published Docker ports                                                    |
+| `FRONTEND_OUT_PORT`           | `3000` — published frontend Docker port                                                                  |
+| `API_OUT_PORT`                | `3001` — published API Docker port                                                                       |
 
-Для проверки веб-версии в браузере приставки запустите frontend через `npm run dev:lan`, задайте `API_HOST=0.0.0.0` и укажите в `API_CORS_ORIGIN` адрес страницы в LAN. `localhost` на телевизоре указывает на сам телевизор. Если порты frontend и API меняются, обновите адрес API и разрешённый origin.
+To test the web app in a TV browser, start the frontend with `npm run dev:lan`, set `API_HOST=0.0.0.0`, and set `API_CORS_ORIGIN` to the page's LAN origin. On a TV, `localhost` refers to the TV itself. If you change the frontend or API ports, update the API URL and allowed origin accordingly.
 
-`NEXT_PUBLIC_*` доступны браузеру и фиксируются при production/export-сборке. Секреты в них не храните. При HTTPS frontend используйте HTTPS API или прокси на том же origin.
+`NEXT_PUBLIC_*` values are exposed to the browser and embedded at production/export build time. Never store secrets in them. An HTTPS frontend requires an HTTPS API or a proxy on the same origin.
 
-## Сборка и Docker
+## Builds and Docker
 
 ```sh
 npm run build
-npm start             # Next.js production, localhost:3000
-npm run api:start     # отдельный процесс API
-npm run build:export  # статические файлы в .next-export/
+npm start             # Production Next.js server, localhost:3000
+npm run api:start     # Separate API process
+npm run build:export  # Static files in .next-export/
 ```
 
-Статический export обслуживается любым HTTP-сервером с поддержкой каталогов `index.html`. API остаётся отдельным процессом. Export сам по себе не создаёт APK.
+The static export can be served by any HTTP server that supports directory `index.html` files. The API remains a separate process. A static export does not produce an APK on its own.
 
-Для Docker выберите один режим frontend и запустите API:
+For Docker, choose one frontend mode and start the API:
 
 ```sh
 npm run docker:run:api
-npm run docker:run:dev     # разработка, bind mounts и Fast Refresh
-# либо:
-npm run docker:run:prod    # Next standalone
-# либо:
-npm run docker:run:static  # export + Nginx
+npm run docker:run:dev     # Development, bind mounts, and Fast Refresh
+# Or:
+npm run docker:run:prod    # Next.js standalone
+# Or:
+npm run docker:run:static  # Static export + Nginx
 ```
 
-Режимы frontend используют один порт; перед переключением выполните `npm run docker:stop:dev`, `docker:stop:prod` или `docker:stop:static`. Для API — `npm run docker:stop:api`. Остановка сохраняет контейнеры. Логи frontend: `npm run docker:logs:dev` (либо `prod`/`static`); API: `docker compose -f docker-compose.api.yml logs -f`.
+Frontend modes share the same published port. Before switching, run `npm run docker:stop:dev`, `docker:stop:prod`, or `docker:stop:static`. Stop the API with `npm run docker:stop:api`. Stopping preserves the containers. View frontend logs with `npm run docker:logs:dev` (or `prod`/`static`), and API logs with `docker compose -f docker-compose.api.yml logs -f`.
 
-По умолчанию порты доступны только локально. Для LAN задайте `HOST_BIND=0.0.0.0` и точный `API_CORS_ORIGIN` в `.env`. Compose использует `.env` для подстановки настроек и передаёт публичный адрес API в сборку. После изменения зависимостей или build-time настроек пересоберите образ. Для публичного размещения настройте TLS и ограничения запросов на reverse proxy; API не содержит авторизации.
+Ports are bound to localhost by default. For LAN access, set `HOST_BIND=0.0.0.0` and the exact `API_CORS_ORIGIN` in `.env`. Compose uses `.env` for configuration substitution and passes the public API URL into the build. Rebuild images after changing dependencies or build-time settings. For public deployment, configure TLS and request limits at the reverse proxy; the API does not implement authentication.
 
 ## Android TV APK
 
-Android-приложение полностью самостоятельно: интерфейс включён в APK, а Kotlin получает каталог, поиск, подробности и данные воспроизведения напрямую из внешних источников. Mac, Docker, Node.js, собственный сервер и настройка адреса API не нужны. Интернет требуется для каталога, постеров и видео.
+The Android app runs independently: the APK includes the interface, and Kotlin fetches catalog data, search results, details, and playback information directly from external sources. It does not require a Mac, Docker, Node.js, your own server, or an API URL setting. Internet access is required for catalog data, artwork, and video.
 
-В `android/` — Kotlin + WebView, минимальная версия Android 7.0 (API 24). Требуется Android System WebView/Chromium **111 или новее**. Номер Android сам по себе не гарантирует совместимость: на устройствах со старым WebView (например, 83) приложение покажет предложение обновить движок. Для сборки установите JDK 17 и Android SDK Platform 36 через Android Studio, задайте `ANDROID_HOME` или локальный `android/local.properties` (`sdk.dir=…`). На macOS:
+The `android/` project uses Kotlin and WebView, with Android 7.0 (API 24) as the minimum OS version. It requires Android System WebView/Chromium **111 or newer**. The Android version alone does not guarantee compatibility: devices with an older WebView, such as version 83, receive a prompt to update the engine. To build the app, install JDK 17 and Android SDK Platform 36 through Android Studio, then configure `ANDROID_HOME` or a local `android/local.properties` file (`sdk.dir=…`). On macOS:
 
 ```sh
 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
@@ -94,9 +94,9 @@ npm ci
 npm run android:build
 ```
 
-Результат: `android/app/build/outputs/apk/debug/app-debug.apk`. Команда создаёт свежий export, проверяет форматирование Kotlin, выполняет Kotlin-тесты и Android Lint и проверяет, что все веб-ресурсы действительно попали в APK. Gradle Wrapper включён в репозиторий. `NEXT_PUBLIC_CATALOG_API_URL` относится только к веб-версии и не используется внутри APK.
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The command creates a fresh web export, checks Kotlin formatting, runs Kotlin tests and Android Lint, and verifies that every web asset is included in the APK. The Gradle Wrapper is included in the repository. `NEXT_PUBLIC_CATALOG_API_URL` applies only to the web app and is not used inside the APK.
 
-При запуске сразу открывается каталог. Параметров подключения и локального HTTP-сервера в приложении нет. Домен источника фиксируется при сборке; при необходимости сменить зеркало:
+The catalog opens immediately on launch. The app has no connection settings or local HTTP server. The source origin is fixed at build time. To use a different source mirror:
 
 ```sh
 npm run android:prepare
@@ -104,74 +104,74 @@ cd android
 ./gradlew -PlordfilmOrigin=https://your-source.example verifyDebugWebAssets
 ```
 
-Оболочка загружает только локальные страницы через WebViewAssetLoader с HTTPS-origin `https://appassets.androidplatform.net`. React передаёт пути существующего контракта (`/v1/…`) через асинхронный, ограниченный этим origin WebMessage-мост. Kotlin возвращает те же DTO. Это обмен сообщениями внутри процесса, а не сетевые обращения к API. Веб-версия продолжает использовать отдельный HTTP API.
+The shell loads only packaged pages through WebViewAssetLoader at the HTTPS origin `https://appassets.androidplatform.net`. React sends paths from the existing contract (`/v1/…`) through an asynchronous WebMessage bridge restricted to that origin. Kotlin returns the same DTOs. These are in-process messages, not network API requests. The web app continues to use a separate HTTP API.
 
-Протокол моста: запрос `{id, path}`, ответ `{id, status, body}`, отмена `{cancel: id}`. Разрешены только известные методы каталога; произвольные URL не принимаются. На Android два сетевых задания и очередь до шести; лишние запросы получают 503. Ответ ограничен 128 КиБ, HTML источника — 4 МиБ, провайдера — 2 МиБ, таймаут каждого HTTP-вызова — 10 секунд. Запросы отменяются при смене экрана/поиска, нативные соединения и задания закрываются при уничтожении Activity. Кеш каталога и поиск на диске отсутствуют.
+Bridge protocol: request `{id, path}`, response `{id, status, body}`, cancellation `{cancel: id}`. Only known catalog operations are accepted; arbitrary URLs are rejected. Android runs two network jobs with a queue of up to six; excess requests receive 503. Responses are limited to 128 KiB, source HTML to 4 MiB, and provider HTML to 2 MiB. Each HTTP call has a 10-second timeout. Requests are cancelled when the screen or search query changes. Native connections and jobs are closed when the Activity is destroyed. Catalog data and search results are not cached on disk.
 
-Предпочтение отдано собственным постерам и фонам источника (`xfields.poster` / `posterbg`). Для популярных фильмов адрес постера уточняется лениво: до двух запросов страниц одновременно, в памяти хранится до 64 адресов на 5 минут; HTML и изображения в этот кеш не входят. Файлы с источника и резервные постеры TMDB загружаются нативным HTTP-клиентом и передаются WebView потоком: до четырёх одновременно, не более 4 МиБ каждый, без собственного кеша изображений. Для `image.tmdb.org` используется DNS-over-HTTPS Cloudflare с резервным Google DNS и проверкой TLS — это решает подмену домена на loopback в системном DNS, не меняя настройки устройства. Другие домены используют системный DNS. Ответы DNS с локальными/loopback-адресами отклоняются; положительные ответы хранятся до 30 секунд. Для DNS необходим доступ к одному из этих резолверов по HTTPS. Приложение не отключает проверку сертификатов и не принимает произвольные URL для загрузки картинок.
+Source-hosted posters and backgrounds (`xfields.poster` / `posterbg`) take priority. For popular titles, poster addresses are resolved lazily, with up to two concurrent page requests. Up to 64 addresses are kept in memory for five minutes; this cache contains neither HTML nor images. Source images and fallback TMDB posters are fetched by the native HTTP client and streamed to WebView, with up to four concurrent transfers and a 4 MiB limit per image. There is no custom image cache. For `image.tmdb.org`, the app uses Cloudflare DNS-over-HTTPS with Google DNS as a fallback and TLS verification. This avoids system DNS responses that map the domain to loopback without changing device settings. Other domains use system DNS. Local and loopback DNS answers are rejected, and positive answers are kept for up to 30 seconds. At least one of these resolvers must be reachable over HTTPS. The app neither disables certificate verification nor accepts arbitrary image URLs.
 
-Стрелки и OK используют TV-навигацию. Back сначала передаётся текущему экрану, затем истории; в корне показывается подтверждение выхода. Медиакнопки передаются веб-плееру. При уходе в фон плеер закрывается и освобождает ресурсы; автоматическое возобновление просмотра пока не реализовано. Голосовой ввод зависит от поддержки Web Speech в WebView: при её отсутствии используется клавиатура.
+Arrows and OK use the existing TV navigation. Back is passed to the current screen first, then to navigation history; at the root, the app asks before exiting. Media keys are forwarded to the web player. When the app enters the background, the player closes and releases its resources. Automatic playback restoration is not implemented. Voice input depends on Web Speech support in WebView; keyboard input remains available when it is unsupported.
 
 ```sh
-npm run test:android:web # export, нативный транспорт без HTTP API, поиск и отмена
+npm run test:android:web # Export, native transport without an HTTP API, search, and cancellation
 cd android
 ./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets assembleRelease
 ```
 
-Редактируемый баннер — `android/branding/tv-banner.svg`, квадратная иконка — `android/app/src/main/res/drawable/app_icon.xml`. После изменения баннера выполните `npm run android:branding` (нужен Chromium: `npx playwright install chromium`). Готовый PNG включён в Git; обычная APK-сборка не требует генерации графики.
+The editable banner is `android/branding/tv-banner.svg`; the square icon is `android/app/src/main/res/drawable/app_icon.xml`. After changing the banner, run `npm run android:branding` (requires Chromium: `npx playwright install chromium`). The generated PNG is committed, so normal APK builds do not require artwork generation.
 
-Kotlin и Gradle-скрипты форматируются командой `./gradlew formatKotlin` из папки `android/`.
+Format Kotlin and Gradle scripts with `./gradlew formatKotlin` from the `android/` directory.
 
-Release: `app/build/outputs/apk/release/app-release-unsigned.apk`; для распространения подпишите своим постоянным ключом Android. Debug APK подписан тестовым ключом и предназначен для проверки. В GitHub Actions он сохраняется артефактом Android-job. Внешний источник и CDN всё ещё могут быть недоступны в конкретной сети; собственный сервер эту доступность больше не определяет.
+Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`. Sign it with your own permanent Android key before distributing it. The debug APK uses a test key and is intended for testing. GitHub Actions saves it as an artifact of the Android job. External sources and CDNs may still be unavailable on a particular network; their availability no longer depends on your own server.
 
-## API и источник данных
+## API and data source
 
-| Метод | Путь                              | Результат                                                   |
-| ----- | --------------------------------- | ----------------------------------------------------------- |
-| GET   | `/v1/catalog/pools/{group}`       | 20 карточек; `group`: `popular`, `new`, `series`            |
-| GET   | `/v1/catalog/search?q=…`          | До 40 карточек; запрос от 2 до 200 символов                 |
-| GET   | `/v1/movies/{id}/{slug}`          | Подробности фильма или сериала                              |
-| GET   | `/v1/movies/{id}/{slug}/playback` | Данные воспроизведения; необязательные `season` и `episode` |
+| Method | Path                              | Result                                                           |
+| ------ | --------------------------------- | ---------------------------------------------------------------- |
+| GET    | `/v1/catalog/pools/{group}`       | 20 titles; `group`: `popular`, `new`, `series`                   |
+| GET    | `/v1/catalog/search?q=…`          | Up to 40 titles; query length: 2–200 characters                  |
+| GET    | `/v1/movies/{id}/{slug}`          | Movie or TV show details                                         |
+| GET    | `/v1/movies/{id}/{slug}/playback` | Playback information; optional `season` and `episode` parameters |
 
-Контракт: [OpenAPI](postman/specs/catalog.openapi.json). Запросы Postman, локальные моки и сценарии находятся в `postman/`; аккаунт Postman для работы приложения и автоматических тестов не нужен.
+Contract: [OpenAPI](postman/specs/catalog.openapi.json). Postman requests, local mocks, and simulations are in `postman/`. A Postman account is not required to run the app or automated tests.
 
-Адаптер читает данные публичных страниц LordFilm без исполнения скриптов. `popular` использует `/top-100`, `new` — `/filmy`, `series` — `/serialy`. Порядок задаёт источник: «Новинки» не гарантируют сортировку по дате премьеры. Внутри подборки карточки уникальны, между подборками могут пересекаться. Поиск использует `/search` с `search_text_mode=full`; пагинация не реализована, при достижении лимита предлагается уточнить запрос.
+The adapter reads data from public LordFilm pages without executing their scripts. `popular` uses `/top-100`, `new` uses `/filmy`, and `series` uses `/serialy`. Ordering comes from the source: the New Releases shelf does not guarantee release-date sorting. Titles are unique within each collection but may appear in multiple collections. Search uses `/search` with `search_text_mode=full`. Pagination is not implemented; users are prompted to refine the query when the result limit is reached.
 
-Подборки кешируются на сервере на 5 минут с объединением одновременных запросов. Поиск и playback не кешируются. Ошибки источника возвращаются как 502, таймаут — 504; отсутствующие данные не подменяются вымышленными. HTML ограничен 4 МиБ, таймаут запроса источника — 10 секунд. CORS разрешает только настроенный origin. Произвольного URL-прокси нет.
+The web API caches collections on the server for five minutes and coalesces concurrent requests. Search and playback responses are not cached. Source failures return 502 and timeouts return 504; missing data is not replaced with fictional entries. HTML is limited to 4 MiB, and source requests have a 10-second timeout. CORS permits only the configured origin. There is no arbitrary URL proxy.
 
-Воспроизведение подключено к провайдеру Collaps; видео идёт напрямую с CDN, API не хранит и не проксирует сегменты. Специальный HTTP-транспорт провайдера реализован в `cdn-loader.ts`. Изменение домена, формата страниц или провайдера может потребовать обновления адаптера. Доступность источника и подписанных ссылок зависит от сети; проект не предоставляет стабильный внешний API.
+Playback uses the Collaps provider. Video is streamed directly from the CDN; the API does not store or proxy media segments. The provider-specific HTTP transport is implemented in `cdn-loader.ts`. Changes to the domain, page format, or provider may require adapter updates. Source availability and signed links depend on the network. The project does not provide a stable external API.
 
-## Память и TV-навигация
+## Memory and TV navigation
 
-На клиенте хранятся только данные текущего экрана: до 60 карточек главной или 40 результатов поиска. Кеша каталога в localStorage/IndexedDB нет. Запросы отменяются при уходе или смене запроса, запоздалые ответы игнорируются. Постеры вне видимой области выгружаются через общий IntersectionObserver.
+The client retains only the current screen's data: up to 60 home screen titles or 40 search results. Catalog data is not cached in localStorage or IndexedDB. Requests are cancelled when leaving a screen or changing the query, and stale responses are ignored. A shared IntersectionObserver unloads offscreen posters.
 
-Плеер и HLS.js загружаются по нажатию «Смотреть». По умолчанию адаптивное качество ограничено 720p; целевой буфер — 10 секунд, максимальный — 20 секунд / 8 МиБ, задний буфер — 0. Это настройки HLS, а не жёсткий лимит памяти браузера. При закрытии плеера уничтожаются HLS, worker, MediaSource, запросы и таймеры.
+The player and HLS.js load only after selecting Watch. Adaptive quality is capped at 720p by default. The target buffer is 10 seconds, the maximum is 20 seconds / 8 MiB, and the back buffer is zero. These are HLS settings, not a hard limit on browser memory. Closing the player destroys HLS, its worker, MediaSource, requests, and timers.
 
-Стрелки перемещают фокус; влево с края контента открывает меню, вправо из меню возвращает в контент. В плеере OK/Space переключает паузу, влево/вправо по видео перематывает на 10 секунд, вверх открывает панель, Back/Escape закрывает плеер. Голосовой ввод запускается только кнопкой микрофона.
+Arrows move focus. Left from the content edge opens the menu; Right from the menu returns to the content. In the player, OK/Space toggles playback, Left/Right on the video seek by 10 seconds, Up opens the controls, and Back/Escape closes the player. Voice input starts only when the microphone button is selected.
 
-## Разработка и вклад
+## Development and contributions
 
 ```text
-src/app       маршруты и root layout
-src/core      провайдеры и композиция приложения
-src/views     экраны, pages-слой FSD
-src/widgets   самостоятельные блоки
-src/features  действия пользователя
-src/entities  модели и компоненты каталога
-src/shared    конфигурация, локали, тема и общие функции
-server        HTTP API, адаптер каталога и провайдер воспроизведения
+src/app       Routes and root layout
+src/core      Providers and application composition
+src/views     Screens; the FSD pages layer
+src/widgets   Self-contained interface blocks
+src/features  User actions
+src/entities  Catalog models and components
+src/shared    Configuration, locales, theme, and utilities
+server        HTTP API, catalog adapter, and playback provider
 ```
 
-Направление зависимостей FSD и публичные API слайсов проверяются ESLint. TypeScript работает в strict-режиме, включая проверку неиспользуемого кода. UI строится на Mantine и Tailwind; пользовательские тексты находятся в `src/shared/locales`. Подробные соглашения — в [AGENTS.md](AGENTS.md).
+ESLint enforces FSD dependency direction and public slice APIs. TypeScript runs in strict mode, including unused code checks. The UI uses Mantine and Tailwind; user-facing strings live in `src/shared/locales`. See [AGENTS.md](AGENTS.md) for detailed conventions.
 
 ```sh
 npm run check
-npx playwright install chromium # один раз; Linux CI: --with-deps
+npx playwright install chromium # Once; use --with-deps on Linux CI
 npm run test:e2e
 npm run build
 npm run build:export
 ```
 
-Браузерные тесты сами запускают frontend на порту 3100 и подменяют внешние API и медиа тестовыми данными. Живой источник и отдельный API для них не нужны. Для уже запущенного frontend задайте `TEST_BASE_URL`. HTTP-тесты API поднимают локальные серверы и проверяют валидацию, парсинг, кеширование, таймауты и ошибки. Медиа в `tests/e2e/fixtures/media` — синтетический тестовый ролик.
+Browser tests start the frontend on port 3100 and replace external APIs and media with fixtures. They do not require a live source or a separate API process. Set `TEST_BASE_URL` to test an already running frontend. API HTTP tests start local servers and cover validation, parsing, caching, timeouts, and errors. Media in `tests/e2e/fixtures/media` is a synthetic test clip.
 
-Перед PR выполните проверки выше, опишите изменение поведения и способ проверки. Для ошибок приложите шаги воспроизведения, версию браузера/WebView и устройства, удалив приватные данные из логов. GitHub Actions проверяет код, браузерные сценарии, обе веб-сборки, Compose и Docker-образы. Отдельный Android-job проверяет Kotlin, нативные тесты, Lint и APK; debug APK доступен в артефактах запуска CI.
+Before opening a PR, run the checks above and describe the behavior change and how you verified it. For bug reports, include reproduction steps and browser/WebView and device versions. Remove private data from logs. GitHub Actions checks the code, browser scenarios, both web builds, Compose configurations, and Docker images. A separate Android job checks Kotlin, native tests, Lint, and APK packaging; its debug APK is available in the workflow artifacts.
