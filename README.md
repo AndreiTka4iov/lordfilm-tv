@@ -1,22 +1,65 @@
 # LordFilm TV
 
-A standalone Android TV app and web client for browsing movies and TV shows, with remote control navigation, search, and a built-in HLS player. Built with Next.js, React, TypeScript, Mantine, and Tailwind CSS. The interface is currently in Russian.
+### Your next movie. Your remote. Your big screen.
 
-| Version     | How it works                                             | Own server                                 |
-| ----------- | -------------------------------------------------------- | ------------------------------------------ |
-| Android APK | The interface and source integrations run inside the app | Not required                               |
-| Web app     | Next.js frontend with a separate Node.js API             | Required for catalog and playback requests |
+Browse movies and TV shows in a clean, cinema-inspired interface built for the couch. Explore poster collections, find a title, and start watching with your TV remote.
 
-## Features
+**Install one APK and open the catalog.** The Android app runs on your TV or streaming box without a companion computer or your own backend server.
 
-- Home screen with three collections of 20 titles each, plus movie and TV show detail pages.
-- Search by title and actor, with a 500 ms debounce, immediate submission on Enter, and voice input where supported by the browser.
-- Arrow, OK, and Back navigation, a sidebar that expands on focus, and focus restoration when returning to a selected title.
-- HLS player with quality and audio track selection, seasons, episodes, and next-episode playback.
-- Light and dark themes with the locally bundled Onest font.
-- Standalone Android APK, a separate API for the web app, Next.js standalone builds, and static export.
+**[Download for Android TV](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk)** · [All releases](https://github.com/AndreiTka4iov/lordfilm-tv/releases) · [Report a bug](https://github.com/AndreiTka4iov/lordfilm-tv/issues)
 
-The project is under development. Menu sections other than Home and Search currently contain placeholders. Authentication and a native video player are not implemented; the Android APK uses the web player. Test physical remote controls and hardware decoding on your target device. Tailwind CSS 4 requires a modern browser or WebView. Voice input depends on browser support, microphone permission, and a secure context.
+![LordFilm TV home screen with movie collections, search, and a compact sidebar](docs/assets/home-screen.png)
+
+## Made for movie nights
+
+| Feature                     | What you get                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Discover something to watch | Browse popular movies, new releases, and TV shows with large posters and dedicated detail pages.          |
+| Stay on the remote          | Move with the arrows, select with OK, and return with Back. The sidebar expands when you focus it.        |
+| Find your next watch        | Search by title or actor. Results update as you type. Voice input is available where supported.           |
+| Settle into a series        | Choose a season and episode, switch audio tracks or quality when available, and move to the next episode. |
+| Make it yours               | Choose a light or dark theme, with clear focus states and smooth card transitions.                        |
+| Run it your way             | Install the standalone Android APK, or self-host the web client with its separate API.                    |
+
+The interface is currently in **Russian**. This is an independent community project built around public LordFilm sources.
+
+## Get it on your TV
+
+1. **[Download the APK](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk)** from GitHub Releases.
+2. Transfer it to your Android TV device or streaming box.
+3. Open the APK with a file manager and allow installation from that app when prompted.
+4. Launch **LordFilm TV** and pick something to watch.
+
+**Requirements:** Android 7.0+ and Android System WebView/Chromium **111 or newer**, plus an internet connection. Check the WebView version as well as the Android version.
+
+The current download is **0.2.0 Preview 1**, signed with a test key and using package `tv.lordfilm.app.debug`. [Release notes and SHA-256 checksum](https://github.com/AndreiTka4iov/lordfilm-tv/releases/tag/v0.2.0-preview.1) are available with the APK.
+
+## A few things to know
+
+**Do I need to keep a computer running?**
+
+No. The Android APK includes the interface and fetches catalog and playback data directly. The self-hosted web version needs its own API process.
+
+**Can I use a regular TV remote?**
+
+Yes. Use the arrows to browse, OK to select, and Back to return. In the player, Left and Right seek, Up opens the controls, and OK pauses or resumes playback.
+
+**Does it work on every Android TV device?**
+
+It needs a compatible WebView engine. Devices with an older engine receive an update prompt. Playback and hardware decoding also depend on the device.
+
+**What is ready today?**
+
+Home collections, search, movie and series details, and HLS playback. The project is in active development: other menu sections are placeholders, and accounts and automatic playback restoration are not implemented. Catalog, artwork, and video availability depend on external sources and your network.
+
+## Help shape the next version
+
+Found an issue or have an idea? [Open an issue](https://github.com/AndreiTka4iov/lordfilm-tv/issues) with your device model, Android and WebView versions, and steps to reproduce. Screenshots help too. Contributions to remote navigation, device compatibility, and playback are welcome.
+
+Want to build your own version? The app uses **Next.js, React, TypeScript, Mantine, Tailwind CSS, and Kotlin**, with Feature-Sliced Design and automated browser and Android checks.
+
+<details>
+<summary><strong>Developer guide — local setup, Docker, Android builds, and API</strong></summary>
 
 ## Run the web app locally
 
@@ -82,13 +125,7 @@ Frontend modes share the same published port. Before switching, run `npm run doc
 
 Ports are bound to localhost by default. For LAN access, set `HOST_BIND=0.0.0.0` and the exact `API_CORS_ORIGIN` in `.env`. Compose uses `.env` for configuration substitution and passes the public API URL into the build. Rebuild images after changing dependencies or build-time settings. For public deployment, configure TLS and request limits at the reverse proxy; the API does not implement authentication.
 
-## Android TV APK
-
-[Download APK — 0.2.0 Preview 1](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk) · [Release notes and SHA-256](https://github.com/AndreiTka4iov/lordfilm-tv/releases/tag/v0.2.0-preview.1)
-
-This is a test-key-signed preview (`tv.lordfilm.app.debug`). Transfer the APK to your TV and open it with a file manager; allow installation from that app when prompted. Requires Android 7.0+ and WebView/Chromium 111+.
-
-The Android app runs independently: the APK includes the interface, and Kotlin fetches catalog data, search results, details, and playback information directly from external sources. It does not require a Mac, Docker, Node.js, your own server, or an API URL setting. Internet access is required for catalog data, artwork, and video.
+## Build the Android APK
 
 The `android/` project uses Kotlin and WebView, with Android 7.0 (API 24) as the minimum OS version. It requires Android System WebView/Chromium **111 or newer**. The Android version alone does not guarantee compatibility: devices with an older WebView, such as version 83, receive a prompt to update the engine. To build the app, install JDK 17 and Android SDK Platform 36 through Android Studio, then configure `ANDROID_HOME` or a local `android/local.properties` file (`sdk.dir=…`). On macOS:
 
@@ -179,3 +216,5 @@ npm run build:export
 Browser tests start the frontend on port 3100 and replace external APIs and media with fixtures. They do not require a live source or a separate API process. Set `TEST_BASE_URL` to test an already running frontend. API HTTP tests start local servers and cover validation, parsing, caching, timeouts, and errors. Media in `tests/e2e/fixtures/media` is a synthetic test clip.
 
 Before opening a PR, run the checks above and describe the behavior change and how you verified it. For bug reports, include reproduction steps and browser/WebView and device versions. Remove private data from logs. GitHub Actions checks the code, browser scenarios, both web builds, Compose configurations, and Docker images. A separate Android job checks Kotlin, native tests, Lint, and APK packaging; its debug APK is available in the workflow artifacts.
+
+</details>
