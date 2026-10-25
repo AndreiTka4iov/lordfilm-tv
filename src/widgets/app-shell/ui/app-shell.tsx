@@ -43,6 +43,26 @@ export function AppShell({
     event.preventDefault()
     focusSidebar()
   }
+  function navigatePreferences(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      const target =
+        contentFocusTarget() ??
+        document.querySelector<HTMLElement>(
+          '[data-movie-card][data-catalog-focus]',
+        ) ??
+        document.getElementById('main-content')
+      target?.focus({ preventScroll: true })
+      target?.scrollIntoView({ block: 'nearest' })
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault()
+      const buttons = Array.from(event.currentTarget.querySelectorAll('button'))
+      const index = buttons.indexOf(event.target as HTMLButtonElement)
+      const next = buttons[index + (event.key === 'ArrowLeft' ? -1 : 1)]
+      if (next) next.focus()
+      else if (event.key === 'ArrowLeft') focusSidebar()
+    }
+  }
   return (
     <div className="min-h-screen pl-[108px] transition-[padding-left] duration-200 ease-out has-[[data-sidebar][data-expanded=true]]:pl-[290px] motion-reduce:transition-none sm:pl-[132px] sm:has-[[data-sidebar][data-expanded=true]]:pl-[314px]">
       {sidebar}
@@ -57,7 +77,10 @@ export function AppShell({
         >
           {children}
         </main>
-        <footer className="flex justify-end py-6">
+        <footer
+          onKeyDown={navigatePreferences}
+          className="flex items-center justify-end gap-4 py-6"
+        >
           <ToggleColorScheme />
         </footer>
       </Container>

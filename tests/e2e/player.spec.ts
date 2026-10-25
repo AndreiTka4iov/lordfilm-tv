@@ -186,3 +186,20 @@ test('unavailable source and broken HLS provide recovery and Back exits only pla
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page).toHaveURL(/\/movie\//)
 })
+
+test('Android background event closes the player and releases media', async ({
+  page,
+}) => {
+  await mockPlayback(page)
+  await page.goto('/movie/?id=1&slug=movie-1')
+  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  await expect(watch).toBeFocused()
+  await watch.press('Enter')
+  await expect(page.locator('video')).toHaveCount(1)
+  const video = await page.locator('video').elementHandle()
+  await page.evaluate(() => window.dispatchEvent(new Event('lordfilm:pause')))
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(watch).toBeFocused()
+  expect(await video?.evaluate((node) => node.getAttribute('src'))).toBeNull()
+  await video?.dispose()
+})

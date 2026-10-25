@@ -20,3 +20,5 @@ tests
 *.log
 *.pem
 *.key
+
+android

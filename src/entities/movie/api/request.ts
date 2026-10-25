@@ -1,3 +1,4 @@
+import { androidHost, requestAndroid } from '@/shared/lib'
 import { catalogApiUrl } from '@/shared/config'
 export class MovieRequestError extends Error {
   readonly status: number
@@ -10,6 +11,11 @@ export async function requestMovie(
   path: string,
   signal: AbortSignal,
 ): Promise<unknown> {
+  if (androidHost()) {
+    const response = await requestAndroid(path, signal)
+    if (response.status !== 200) throw new MovieRequestError(response.status)
+    return response.body
+  }
   const response = await fetch(`${catalogApiUrl()}${path}`, {
     signal,
     cache: 'no-store',

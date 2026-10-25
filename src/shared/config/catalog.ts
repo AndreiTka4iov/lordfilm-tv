@@ -1,4 +1,6 @@
 export function catalogApiUrl(): string {
+  if (window.location.hostname === 'appassets.androidplatform.net')
+    throw new Error('Packaged Android requests must use the native transport')
   const configured = process.env.NEXT_PUBLIC_CATALOG_API_URL?.trim()
   if (configured)
     return new URL(configured, window.location.origin).href.replace(/\/$/, '')

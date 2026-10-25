@@ -44,6 +44,8 @@ function navigate(event: KeyboardEvent<HTMLElement>) {
     target =
       next?.[Math.min(index, next.length - 1)] ??
       adjacent?.querySelector<HTMLElement>('button')
+    if (!adjacent && event.key === 'ArrowDown')
+      target = document.querySelector<HTMLElement>('footer button')
     if (!adjacent && event.key === 'ArrowUp')
       target = document.querySelector<HTMLElement>('[data-catalog-search]')
   } else return

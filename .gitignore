@@ -20,3 +20,20 @@ postman/skills/
 *.log
 *.pem
 *.key
+
+# Android local SDK, generated bundles, credentials and build output
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+
+# Release artifacts, local signing settings and heap dumps
+*.apk
+*.aab
+*.hprof
+*.p12
+*.pfx
+android/key.properties
+android/keystore.properties

@@ -12,6 +12,7 @@ export default defineConfig([
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   globalIgnores([
+    'android/**',
     '.next*/**',
     'out/**',
     'node_modules/**',

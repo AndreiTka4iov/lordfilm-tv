@@ -44,6 +44,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## Android
+
+- APK работает самостоятельно через origin-scoped WebMessage-мост; адреса backend на Mac/LAN в Android не добавлять.
+- Kotlin-код: `android/app/src/`; форматировать `cd android && ./gradlew formatKotlin`.
+- Проверки: `npm run test:android:web`, затем `cd android && ./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets assembleRelease`.
+- Не включать в Git APK/AAB, SDK-пути, ключи подписи и данные подключённых устройств.
+- Требования: Android API 24+, WebView/Chromium 111+. Старые движки должны получать понятное сообщение.
+
 ## API
 
 - Контракт — `postman/specs/catalog.openapi.json`, примеры запросов — `postman/collections/`.

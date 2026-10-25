@@ -388,6 +388,10 @@ export function VideoPlayer({
   title: string
   onClose: () => void
 }) {
+  useEffect(() => {
+    window.addEventListener('lordfilm:pause', onClose)
+    return () => window.removeEventListener('lordfilm:pause', onClose)
+  }, [onClose])
   const { state, select, retry } = usePlayback(id, slug)
   const m = messages.player
   const statusRoot = useRef<HTMLDivElement>(null)

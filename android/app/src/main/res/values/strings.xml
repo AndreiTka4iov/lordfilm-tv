@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">LordFilm TV</string>
+    <string name="app_name_debug">LordFilm TV Debug</string>
+    <string name="exit_title">Закрыть LordFilm TV?</string>
+    <string name="exit">Выйти</string>
+    <string name="stay">Остаться</string>
+    <string name="web_error">Не удалось открыть интерфейс приложения.</string>
+    <string name="retry">Повторить</string>
+    <string name="webview_update">Для запуска нужен Android System WebView версии 111 или новее. Обновите WebView в настройках устройства.</string>
+</resources>

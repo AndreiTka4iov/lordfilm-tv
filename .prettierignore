@@ -11,3 +11,9 @@ coverage
 # Downloaded Postman skill sources
 postman/skills
 .postman/skills.json
+
+android/.gradle
+android/.kotlin
+android/**/build
+android/gradlew
+android/gradlew.bat

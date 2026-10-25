@@ -1,6 +1,6 @@
 {
   "name": "lordfilm-tv",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
@@ -35,7 +35,11 @@
     "api:start": "node --env-file-if-exists=.env server/main.ts",
     "test:api": "node --test tests/api/*.test.mjs",
     "docker:run:api": "docker compose -f docker-compose.api.yml up --build -d",
-    "docker:stop:api": "docker compose -f docker-compose.api.yml stop"
+    "docker:stop:api": "docker compose -f docker-compose.api.yml stop",
+    "android:prepare": "node tools/android/prepare.mjs",
+    "android:build": "npm run android:prepare && node tools/android/build.mjs",
+    "test:android:web": "npm run android:prepare && playwright test --config playwright.android.config.ts",
+    "android:branding": "node tools/android/branding.mjs"
   },
   "dependencies": {
     "@fontsource-variable/onest": "5.3.0",

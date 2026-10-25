@@ -1,0 +1,22 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="320"
+  height="180"
+  viewBox="0 0 320 180"
+>
+  <rect width="320" height="180" fill="#94d82d" />
+  <g id="brand">
+    <path d="M0 -27L43 0L0 27Z" fill="#141414" />
+    <text
+      id="name"
+      x="59"
+      y="0"
+      fill="#141414"
+      font-family="Onest,sans-serif"
+      font-size="29"
+      font-weight="750"
+    >
+      LordFilm TV
+    </text>
+  </g>
+</svg>
