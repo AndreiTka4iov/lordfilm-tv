@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'unknown',
+  'url': '{{baseUrl}}/v1/catalog/pools/unknown',
+  'method': 'GET',
+  'order': 4000,
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(404));",
+      },
+    ],
+}

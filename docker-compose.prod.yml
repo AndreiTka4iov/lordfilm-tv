@@ -1,0 +1,19 @@
+name: lordfilm-tv-prod
+services:
+  app:
+    image: lordfilm-tv:production
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CATALOG_API_URL: '${NEXT_PUBLIC_CATALOG_API_URL:-}'
+    init: true
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+    ports:
+      - '${HOST_BIND:-127.0.0.1}:${FRONTEND_OUT_PORT:-3000}:3000'
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]

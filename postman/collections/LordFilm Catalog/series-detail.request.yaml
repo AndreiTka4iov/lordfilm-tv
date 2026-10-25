@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'series-detail',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/1108/ljupen-2021',
+  'order': 6000,
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('series details', () => pm.expect(pm.response.json().kind).to.equal('series'));",
+      },
+    ],
+}

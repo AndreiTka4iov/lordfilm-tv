@@ -1,0 +1,7 @@
+FROM node:24-alpine
+ENV NODE_ENV=production API_HOST=0.0.0.0 API_PORT=3001
+WORKDIR /app
+COPY --chown=node:node server ./server
+USER node
+EXPOSE 3001
+CMD ["node", "server/main.ts"]

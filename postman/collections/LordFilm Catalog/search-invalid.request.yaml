@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'search-invalid',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/catalog/search?q=%D1%8F',
+  'queryParams': [{ 'key': 'q', 'value': 'я' }],
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(400));\n",
+      },
+    ],
+}

@@ -1,0 +1,9 @@
+version: 1
+name: catalog-api
+slug: catalog-api
+protocol: http
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.cjs
+    default: true

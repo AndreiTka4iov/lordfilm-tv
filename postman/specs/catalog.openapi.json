@@ -1,0 +1,568 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "LordFilm TV Catalog",
+    "version": "1.0.0",
+    "description": "Read-only public LordFilm catalog adapter. Pools are independently cached for 300 seconds; failures are not padded with fictional items."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001"
+    }
+  ],
+  "paths": {
+    "/v1/catalog/pools/{group}": {
+      "get": {
+        "operationId": "getCatalogPool",
+        "summary": "Return 20 distinct titles in source order",
+        "description": "popular: first 20 available films in LordFilm Top 100. new: first 20 films in the source catalog (source order, not release-date sorting). series: first 20 entries of the series catalog. No authentication. No pagination or arbitrary source URLs.",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["popular", "new", "series"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Independent cached pool; generatedAt is the source fetch time. No stale responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["group", "items", "generatedAt"],
+                  "properties": {
+                    "group": {
+                      "type": "string",
+                      "enum": ["popular", "new", "series"]
+                    },
+                    "generatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "items": {
+                      "type": "array",
+                      "minItems": 20,
+                      "maxItems": 20,
+                      "items": {
+                        "$ref": "#/components/schemas/Movie"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "504": {
+            "$ref": "#/components/responses/UpstreamTimeout"
+          }
+        }
+      }
+    },
+    "/v1/movies/{id}/{slug}": {
+      "get": {
+        "operationId": "getMovieDetail",
+        "summary": "Get one movie or series",
+        "description": "Read-only public metadata from LordFilm. No video streams. No detail cache; only one detail response is retained by the frontend while open.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,12}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,200}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Movie or series metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovieDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "504": {
+            "$ref": "#/components/responses/UpstreamTimeout"
+          }
+        }
+      }
+    },
+    "/v1/movies/{id}/{slug}/playback": {
+      "get": {
+        "operationId": "getPlayback",
+        "summary": "Resolve a fresh public HLS source",
+        "description": "Requested only on Watch or episode change. No caching or video proxy. Uses public Collaps metadata linked by LordFilm collaps_id. First available season/episode by default; only selected-season episode metadata returned. Provider blocks/missing sources are not bypassed.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,12}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,200}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999
+            }
+          },
+          {
+            "in": "query",
+            "name": "episode",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selected HLS URL and bounded episode metadata. Signed URLs are temporary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Playback"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or duplicate season/episode parameters"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "422": {
+            "description": "No supported public HLS source or unavailable episode"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "504": {
+            "$ref": "#/components/responses/UpstreamTimeout"
+          }
+        }
+      }
+    },
+    "/v1/catalog/search": {
+      "get": {
+        "operationId": "searchMovies",
+        "summary": "Search public LordFilm movie and series metadata",
+        "description": "Submitted queries only. Trimmed and whitespace-normalized; no result cache. At most 40 distinct items in source order. The public search page has no verified pagination, so results are bounded and limited is reported. Uses the public full-text mode to include actor metadata as well as titles.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search window, possibly empty",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing, duplicate, invalid or unsupported query parameters"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamFailure"
+          },
+          "504": {
+            "$ref": "#/components/responses/UpstreamTimeout"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Movie": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "year",
+          "poster",
+          "rating",
+          "kind",
+          "sourceUrl"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer",
+            "nullable": true
+          },
+          "poster": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["movie", "series"]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MovieDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "year",
+          "poster",
+          "rating",
+          "kind",
+          "sourceUrl",
+          "description",
+          "originalTitle",
+          "duration",
+          "genres",
+          "countries",
+          "directors",
+          "actors",
+          "backdrop"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer",
+            "nullable": true
+          },
+          "poster": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["movie", "series"]
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 12000
+          },
+          "originalTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "genres": {
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "countries": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "directors": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "actors": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          "backdrop": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "description": "Optional landscape artwork. TMDB URLs use a bounded w780 derivative."
+          }
+        }
+      },
+      "Playback": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "type",
+          "src",
+          "audioNames",
+          "seasons",
+          "episodes",
+          "season",
+          "episode",
+          "cdnTime"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["movie", "series"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["hls"]
+          },
+          "src": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 8192
+          },
+          "audioNames": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          "seasons": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999
+            }
+          },
+          "episodes": {
+            "type": "array",
+            "maxItems": 300,
+            "items": {
+              "type": "object",
+              "required": ["number", "title"],
+              "properties": {
+                "number": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9999
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
+            }
+          },
+          "season": {
+            "type": "integer",
+            "nullable": true
+          },
+          "episode": {
+            "type": "integer",
+            "nullable": true
+          },
+          "cdnTime": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Provider clock in seconds for its public CDN URL transport; no media keys or executable code."
+          }
+        }
+      },
+      "SearchResults": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["query", "items", "limited"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 40,
+            "items": {
+              "$ref": "#/components/schemas/Movie"
+            }
+          },
+          "limited": {
+            "type": "boolean",
+            "description": "True when the public source returned its 40-item search window. Refine the query; no invented total or pagination."
+          }
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Unknown route or pool",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "Only GET is supported",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UpstreamFailure": {
+        "description": "Source unavailable, invalid or fewer than 20 valid titles",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UpstreamTimeout": {
+        "description": "Source request exceeded 10 seconds",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

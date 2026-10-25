@@ -1,0 +1,8 @@
+@layer theme, base, mantine, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@source '../';
+@theme inline {
+  --color-accent: var(--mantine-primary-color-filled);
+  --font-sans: var(--mantine-font-family);
+}

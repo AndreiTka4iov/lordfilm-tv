@@ -1,0 +1,6 @@
+simulation: home-catalog
+routing: path
+mocks:
+  - name: catalog-api
+    routeKey: catalog
+    path: postman/mocks/catalog-api/config.yaml

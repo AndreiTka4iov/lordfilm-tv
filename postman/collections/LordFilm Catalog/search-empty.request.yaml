@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'search-empty',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/catalog/search?q=qqzzxvbnm987654321',
+  'queryParams': [{ 'key': 'q', 'value': 'qqzzxvbnm987654321' }],
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('empty search', () => pm.expect(pm.response.json().items).to.have.length(0));",
+      },
+    ],
+}

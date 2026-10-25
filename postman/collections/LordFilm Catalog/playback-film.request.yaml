@@ -1,0 +1,14 @@
+{
+  '$kind': 'http-request',
+  'name': 'playback-film',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/44007/proekt-ave-marija-2026/playback',
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('HLS source', () => { const p=pm.response.json(); pm.expect(p.type).to.equal('hls'); pm.expect(p.src).to.include('.m3u8'); pm.expect(p.kind).to.equal('movie'); });",
+      },
+    ],
+}

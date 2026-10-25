@@ -1,0 +1,22 @@
+node_modules/
+.next/
+.next-export/
+.next-dev/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env*
+!.env.example
+next-env.d.ts
+.DS_Store
+
+# Local tooling and downloaded agent instructions
+.postman/
+postman/skills/
+.idea/
+.vscode/
+*.log
+*.pem
+*.key

@@ -1,0 +1,4 @@
+$kind: collection
+description: Read-only public LordFilm catalog adapter. Pools are independently cached for 300 seconds; failures are not padded with fictional items.
+variables:
+  baseUrl: http://localhost:3001

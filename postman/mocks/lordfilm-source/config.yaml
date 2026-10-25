@@ -1,0 +1,9 @@
+version: 1
+name: lordfilm-source
+slug: lordfilm-source
+protocol: http
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.cjs
+    default: true

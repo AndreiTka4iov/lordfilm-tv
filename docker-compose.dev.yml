@@ -1,0 +1,31 @@
+name: lordfilm-tv-dev
+services:
+  app:
+    image: lordfilm-tv:development
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    init: true
+    environment:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_CATALOG_API_URL: '${NEXT_PUBLIC_CATALOG_API_URL:-}'
+    ports:
+      - '${HOST_BIND:-127.0.0.1}:${FRONTEND_OUT_PORT:-3000}:3000'
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public:ro
+      - ./next.config.ts:/app/next.config.ts:ro
+      - ./postcss.config.mjs:/app/postcss.config.mjs:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/', {signal: AbortSignal.timeout(20000)}).then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 25s
+      start_period: 90s
+      retries: 5

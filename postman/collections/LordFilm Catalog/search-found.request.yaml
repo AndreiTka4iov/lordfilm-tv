@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'search-found',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/catalog/search?q=%D0%9B%D1%8E%D0%BF%D0%B5%D0%BD',
+  'queryParams': [{ 'key': 'q', 'value': 'Люпен' }],
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('real search results', () => { const r=pm.response.json(); pm.expect(r.query).to.equal('Люпен'); pm.expect(r.items.length).to.be.above(0); pm.expect(r.items.length).to.be.at.most(40); });",
+      },
+    ],
+}

@@ -1,0 +1,13 @@
+node_modules
+.next*
+out
+package-lock.json
+next-env.d.ts
+*.tsbuildinfo
+test-results
+playwright-report
+coverage
+
+# Downloaded Postman skill sources
+postman/skills
+.postman/skills.json

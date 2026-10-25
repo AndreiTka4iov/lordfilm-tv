@@ -1,0 +1,29 @@
+$kind: http-example
+request:
+  url: '{{baseUrl}}/v1/catalog/pools/:group'
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: group
+      value: popular
+      disabled: false
+      description: '(Required) '
+  body:
+    type: text
+    content: ''
+response:
+  statusCode: 504
+  statusText: Gateway Timeout
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": {
+          "code": "string",
+          "message": "string"
+        }
+      }
+order: 5000

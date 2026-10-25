@@ -1,0 +1,6 @@
+simulation: source-failure
+routing: path
+mocks:
+  - name: lordfilm-source
+    routeKey: source
+    path: postman/mocks/lordfilm-source/config.yaml

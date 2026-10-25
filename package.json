@@ -1,0 +1,79 @@
+{
+  "name": "lordfilm-tv",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "dev:lan": "next dev --hostname 0.0.0.0",
+    "dev:docker": "next dev --hostname 0.0.0.0 --port 3000",
+    "build": "next build --webpack",
+    "build:export": "cross-env APP_BUILD_TARGET=export next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:api",
+    "docker:run:dev": "docker compose -f docker-compose.dev.yml up --build -d --wait --wait-timeout 300",
+    "docker:stop:dev": "docker compose -f docker-compose.dev.yml stop",
+    "docker:logs:dev": "docker compose -f docker-compose.dev.yml logs --tail=100 -f",
+    "docker:status:dev": "docker compose -f docker-compose.dev.yml ps",
+    "docker:build:dev": "docker compose -f docker-compose.dev.yml build",
+    "docker:run:prod": "docker compose -f docker-compose.prod.yml up --build -d --wait --wait-timeout 300",
+    "docker:stop:prod": "docker compose -f docker-compose.prod.yml stop",
+    "docker:logs:prod": "docker compose -f docker-compose.prod.yml logs --tail=100 -f",
+    "docker:status:prod": "docker compose -f docker-compose.prod.yml ps",
+    "docker:build:prod": "docker compose -f docker-compose.prod.yml build",
+    "docker:run:static": "docker compose -f docker-compose.static.yml up --build -d --wait --wait-timeout 300",
+    "docker:stop:static": "docker compose -f docker-compose.static.yml stop",
+    "docker:logs:static": "docker compose -f docker-compose.static.yml logs --tail=100 -f",
+    "docker:status:static": "docker compose -f docker-compose.static.yml ps",
+    "docker:build:static": "docker compose -f docker-compose.static.yml build",
+    "test:e2e": "playwright test",
+    "api:dev": "node --env-file-if-exists=.env --watch server/main.ts",
+    "api:start": "node --env-file-if-exists=.env server/main.ts",
+    "test:api": "node --test tests/api/*.test.mjs",
+    "docker:run:api": "docker compose -f docker-compose.api.yml up --build -d",
+    "docker:stop:api": "docker compose -f docker-compose.api.yml stop"
+  },
+  "dependencies": {
+    "@fontsource-variable/onest": "5.3.0",
+    "@mantine/core": "9.7.3",
+    "@mantine/hooks": "9.7.3",
+    "@tabler/icons-react": "3.49.0",
+    "hls.js": "1.7.3",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^10",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "postcss": "^8",
+    "prettier": "^3",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9"
+  },
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "npm": ">=11 <13"
+  },
+  "description": "TV-first movie browser with D-pad navigation, search and HLS playback.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreiTka4iov/lordfilm-tv.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AndreiTka4iov/lordfilm-tv/issues"
+  },
+  "homepage": "https://github.com/AndreiTka4iov/lordfilm-tv#readme",
+  "license": "MIT"
+}

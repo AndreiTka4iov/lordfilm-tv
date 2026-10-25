@@ -1,0 +1,14 @@
+{
+  '$kind': 'http-request',
+  'name': 'playback-series',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/1108/ljupen-2021/playback',
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('episode metadata', () => { const p=pm.response.json(); pm.expect(p.kind).to.equal('series'); pm.expect(p.episodes.length).to.be.above(0); });",
+      },
+    ],
+}

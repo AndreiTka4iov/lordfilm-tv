@@ -1,0 +1,230 @@
+$kind: http-example
+name: Independent cached pool; generatedAt is the source fetch time. No stale responses.
+request:
+  url: '{{baseUrl}}/v1/catalog/pools/:group'
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: group
+      value: popular
+      disabled: false
+      description: '(Required) '
+  body:
+    type: text
+    content: ''
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "group": "popular",
+        "items": [
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7500,
+            "poster": "http://ALKEKGRDDboDPpPLxjjNFAKyzXUmj.uvzgBbryXRpH5BPMDKwaTF8eyg1kLFkngR",
+            "rating": 9.13533502491191,
+            "kind": "series",
+            "sourceUrl": "http://wcSrkkaSrSqNYEqtsNsvhOJuo.wluwLOozauccaUv042ya0UBJUta78cW"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 9325,
+            "poster": "http://CmLn.umvz+fhbUXT",
+            "rating": 1.321623029652983,
+            "kind": "series",
+            "sourceUrl": "http://RuQJHy.dvlhoZQI5qwbDTYy4T1E3iczdQf69ypUsyJmQi,6X.mhnX3jGoavDcUxKewnvz6oX9"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 3920,
+            "poster": "http://afMtZekEbgDzktlL.xtxPntzKvUteQJfgaYiNkZ43QrHr",
+            "rating": 0.08622396038845181,
+            "kind": "movie",
+            "sourceUrl": "https://RocOBulsNSZSamcbe.jrq95OdcESAQANd2LzcgXLw9EMTSOdFLiU9E.dZJOvJJ,FC.IU,PPdi5R60"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7743,
+            "poster": "https://fBTUAQkNLuTg.wwvKK2zi-jKdBYJ",
+            "rating": 6.245761797763407,
+            "kind": "movie",
+            "sourceUrl": "http://QebaWwicUtORuohqIaQhYXoDleNWbTy.bfpt4PMuu4qVcWSOQmOyyR0ZcFS8zEjFhAVaoj5twLNdpmTMqp"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 1926,
+            "poster": "http://aBml.gaujy8haTJNbkCbm1RxSnENbX37NirNAt",
+            "rating": 7.176698362454772,
+            "kind": "series",
+            "sourceUrl": "http://UguEzFjaKWlTDTrqkrSTh.lgzpZCkQoOk0amFR-F4YMI4GsG99-6BgIUc+7c0PD,uD,O2MPrhJMBeMiP2+JadfEfesoLbm9xT"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 1647,
+            "poster": "http://fdeenzjzUKuxVWSlMeDPAe.fmeTdX5EncrxjHL3",
+            "rating": 6.414224207401276,
+            "kind": "series",
+            "sourceUrl": "https://KfDpNefBnhXNjUbvn.yiZuzWyLSx"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 4256,
+            "poster": "http://zs.zoX1RZYTqy3VxscJxNgJFN6PBb81v3xAVOf",
+            "rating": 6.947738311719149,
+            "kind": "series",
+            "sourceUrl": "https://YoYKfqjTNbPMokAjAhjjnfHBcXoxEYILD.jmpvvGDz9IyyDhr"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7074,
+            "poster": "http://mSTAYkZqHeJtZrbnOCEzCTZ.ypH",
+            "rating": 2.8270358592271805,
+            "kind": "series",
+            "sourceUrl": "http://GmGjcaWsIfHRB.krEQoPpTpycIP+UrYwydMecAElfVoauwHfbj0.ams"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7009,
+            "poster": "https://SBBlEnqMuSjRNDJJrWIScUPbGZjvMW.prodlLfK2HEMvyKblc-dRnXnTUVd6w.R3ynU64J",
+            "rating": 8.060853155329823,
+            "kind": "series",
+            "sourceUrl": "https://fIEyLvfFtFADDg.pqHvnwhjUhEFaRzBJdxJR0B8IPL.M,VC1wlICOGcFBxpfdqoG,pHpKOEGe66"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7092,
+            "poster": "https://yqBdm.vctoDmp8obBOr7yP2QcdXmVSGvSAUeMmzW+,aYPmOI0F7ZS0yYQ8MxlVO9BTh6ihmN-NAY3",
+            "rating": 6.545026865787804,
+            "kind": "movie",
+            "sourceUrl": "http://nLqqzseilPtIzwxQzkpNdFY.gxeuIN,bK5FvmTKpSDZ8koAn8zgW.dYhYq"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 7475,
+            "poster": "https://WhxtqBtOytM.oahbj",
+            "rating": 0.42605552822351456,
+            "kind": "series",
+            "sourceUrl": "https://hKgoowwaSQ.oclxSRyHvnmQok5FjseJSxvF"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 6952,
+            "poster": "https://dTDCmhnuaqlEJRBUIDMizuMdMT.jwUg5e4GxxzNFdUeQXalVmObk-f+dgUf0EJzXrWMCoIAZQdLaJ8d",
+            "rating": 4.12242017686367,
+            "kind": "series",
+            "sourceUrl": "https://opVJI.hsbopsOb+ZuWFTwLsZnI2BL1fBiZ++8z.ey2Y+0QAhw,DCxsEGL6XqDyOBaYVVnr,1XMXtTJk.Cc++IB1q3"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 732,
+            "poster": "https://WT.wpsbo93ApYCY9IFhvLXzh6+03uxzZ2+sq1tE2rqIDh28SP-hh6o4.xzvGl",
+            "rating": 4.532683850266039,
+            "kind": "movie",
+            "sourceUrl": "http://hAKgXNhUhIZt.emCHWxA6FnChtrQPwC9IX3KR6VUcSLItuqjDAEcxfBdrmts"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 1680,
+            "poster": "http://SBEjTNvf.tyBar37",
+            "rating": 8.95872212247923,
+            "kind": "movie",
+            "sourceUrl": "https://hYCZX.luJ9D"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 2154,
+            "poster": "https://epoWkyKlcTYZtOvYrMthSmgpiJayDjP.wctyQ.yH,NVSy1YKUowz48Ef",
+            "rating": 6.003340892493725,
+            "kind": "movie",
+            "sourceUrl": "https://VlzqVZZIIer.zfIRpCTHfF76gJX7jOk9TZ4yT3"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 4230,
+            "poster": "http://OzTYhrGgYudeaB.ckyKbn7Dpk8",
+            "rating": 9.817124214023352,
+            "kind": "series",
+            "sourceUrl": "http://CYZiEbaqxFlKHvdhVPbxoMktIY.mdfKVE34JXn7HSd7B9hznmM-dBGHpidiOscdb1AzmDu"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 4526,
+            "poster": "http://nkdxTYAJlEFWSVegQvdTNOnH.tkrN3OWaJ0Q5Ps9B",
+            "rating": 1.780354694928974,
+            "kind": "series",
+            "sourceUrl": "https://Wp.tygnqodlL1BrMBXf0UsePJL37+-xr3Z3HXZ2"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 5262,
+            "poster": "http://BSsTQemDsArHskaRzFUjabLIghnCtu.zkkeeLVhMCR+r.Lx6UyBuj58fI",
+            "rating": 2.0299871009774506,
+            "kind": "movie",
+            "sourceUrl": "http://ELzVFkxgEAKuUvrbbJNxnbJZUWLXrv.pcSw0BbOdMZoo5heICz"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 1481,
+            "poster": "https://wUTLNwylpBwTy.lpunlQxlMvDzC",
+            "rating": 4.640809092670679,
+            "kind": "movie",
+            "sourceUrl": "http://cdnBReMNiQagpvDAzc.odofuLY3ILEL2caaTMggMdkSK1PbPhTO7B0xYIJtIECbyXNDRyistFQ5ZHP9KMCUW"
+          },
+          {
+            "id": "string",
+            "slug": "string",
+            "title": "string",
+            "year": 2378,
+            "poster": "http://VIghMUHrWkCyYiZYYnNlxHheHMnKtYS.tvrbJw5yvY4XMOfDId7OPGipPUY,+JUl1B-",
+            "rating": 9.86297243507579,
+            "kind": "series",
+            "sourceUrl": "http://avGtHrNJpFWGOSUsgAks.byrtDYxjdvW7wCWiD29LMQFuYLR+j0FDyJUNp-PJB4uXAYnq2S1whxdjw."
+          }
+        ],
+        "generatedAt": "1979-07-18T07:58:04.538Z"
+      }
+order: 1000

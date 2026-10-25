@@ -1,0 +1,13 @@
+name: lordfilm-tv-api
+services:
+  api:
+    image: lordfilm-tv:api
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    init: true
+    environment:
+      LORDFILM_ORIGIN: '${LORDFILM_ORIGIN:-https://lordfilmx13.ink}'
+      API_CORS_ORIGIN: '${API_CORS_ORIGIN:-http://localhost:3000}'
+    ports:
+      - '${HOST_BIND:-127.0.0.1}:${API_OUT_PORT:-3001}:3001'

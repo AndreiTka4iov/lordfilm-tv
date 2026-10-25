@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'playback-invalid',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/44007/proekt-ave-marija-2026/playback?season=0',
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(400));\n",
+      },
+    ],
+  'queryParams': [{ 'key': 'season', 'value': '0' }],
+}

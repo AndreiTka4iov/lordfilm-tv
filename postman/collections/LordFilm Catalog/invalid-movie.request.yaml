@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'invalid-movie',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/invalid/slug',
+  'order': 7000,
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(404));\n",
+      },
+    ],
+}

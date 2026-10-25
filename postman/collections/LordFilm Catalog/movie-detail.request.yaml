@@ -1,0 +1,15 @@
+{
+  '$kind': 'http-request',
+  'name': 'movie-detail',
+  'method': 'GET',
+  'url': '{{baseUrl}}/v1/movies/44007/proekt-ave-marija-2026',
+  'order': 5000,
+  'scripts':
+    [
+      {
+        'type': 'afterResponse',
+        'language': 'text/javascript',
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\npm.test('movie details', () => { const m = pm.response.json(); pm.expect(m.id).to.equal('44007'); pm.expect(m.kind).to.equal('movie'); pm.expect(m).to.have.property('backdrop'); pm.expect(m.description).to.be.a('string'); });",
+      },
+    ],
+}
