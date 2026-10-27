@@ -60,7 +60,7 @@ test('series route loads only its pool, shows 20 cards and keeps posters bounded
     await page.locator('[data-series-catalog] [data-movie-poster]').count(),
   ).toBeLessThanOrEqual(20)
   await page.screenshot({
-    path: '/private/tmp/lordfilm-series-catalog-1920.png',
+    path: test.info().outputPath('lordfilm-series-catalog-1920.png'),
   })
 })
 
@@ -137,7 +137,7 @@ test('remote navigates grid rows, sidebar and search at a small TV size', async 
     ),
   ).toBe(true)
   await page.screenshot({
-    path: '/private/tmp/lordfilm-series-catalog-960.png',
+    path: test.info().outputPath('lordfilm-series-catalog-960.png'),
   })
 })
 

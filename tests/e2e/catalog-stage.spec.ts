@@ -31,7 +31,9 @@ test('home updates the preview with focus while only the bottom shelves scroll',
       .locator('[data-catalog-tray]')
       .evaluate((node) => node.scrollTop),
   ).toBeGreaterThan(0)
-  await page.screenshot({ path: '/private/tmp/lordfilm-stage-home-960.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-stage-home-960.png'),
+  })
 })
 test('series grid stays below its preview and restores selected item after details', async ({
   page,
@@ -44,7 +46,9 @@ test('series grid stays below its preview and restores selected item after detai
   await expect(preview.getByRole('heading')).toHaveText('series фильм 20')
   await expect(preview).toContainText('Описание фильма 20')
   expect(await page.evaluate(() => scrollY)).toBe(0)
-  await page.screenshot({ path: '/private/tmp/lordfilm-stage-series-1920.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-stage-series-1920.png'),
+  })
   await cards.last().press('Enter')
   await expect(page).toHaveURL(/\/movie\//)
   await page.getByRole('link', { name: 'Назад к сериалам' }).click()
@@ -184,7 +188,9 @@ test('the current shelf title stays above the clipped list while navigating', as
   await expect(page.locator('[data-catalog-preview]')).toContainText(
     'Описание фильма 1',
   )
-  await page.screenshot({ path: '/private/tmp/lordfilm-list-title-960.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-list-title-960.png'),
+  })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.keyboard.press('ArrowUp')
   await expect(title).toHaveText('Популярные фильмы')

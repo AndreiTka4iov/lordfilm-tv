@@ -42,11 +42,11 @@ for (const kind of ['movie', 'series']) {
       ),
     ).toBe(true)
     await page.screenshot({
-      path: `/private/tmp/lordfilm-detail-hero-${kind}-960.png`,
+      path: test.info().outputPath(`lordfilm-detail-hero-${kind}-960.png`),
     })
     await page.setViewportSize({ width: 1920, height: 1080 })
     await page.screenshot({
-      path: `/private/tmp/lordfilm-detail-hero-${kind}-1920.png`,
+      path: test.info().outputPath(`lordfilm-detail-hero-${kind}-1920.png`),
     })
   })
 }

@@ -33,7 +33,11 @@ for (const path of ['/', '/series/']) {
     for (const rect of rects)
       expect(rect.width / rect.height).toBeCloseTo(2 / 3, 2)
     await page.screenshot({
-      path: `/private/tmp/lordfilm-thumbnails-${path === '/' ? 'home' : 'series'}.png`,
+      path: test
+        .info()
+        .outputPath(
+          `lordfilm-thumbnails-${path === '/' ? 'home' : 'series'}.png`,
+        ),
     })
   })
 }

@@ -125,7 +125,9 @@ test('title and description keep their positions when lengths and loading state 
     before.description?.y ?? 0,
     1,
   )
-  await page.screenshot({ path: '/private/tmp/lordfilm-stable-focus-1920.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-stable-focus-1920.png'),
+  })
 })
 
 test('focus frame animates between cards and respects reduced motion', async ({

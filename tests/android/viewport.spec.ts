@@ -120,6 +120,6 @@ test('native TV viewport fits a 1280px canvas on a dense 720p display and surviv
       .toBeGreaterThanOrEqual(1279)
   }
   await page.screenshot({
-    path: '/private/tmp/lordfilm-tv-scale-emulation.png',
+    path: test.info().outputPath('lordfilm-tv-scale-emulation.png'),
   })
 })

@@ -39,7 +39,7 @@ for (const width of [960, 1920]) {
     await first.focus()
     await expectBottomInset(page)
     await page.screenshot({
-      path: `/private/tmp/lordfilm-first-row-${width}.png`,
+      path: test.info().outputPath(`lordfilm-first-row-${width}.png`),
     })
     await first.press('ArrowDown')
     await expectBottomInset(page)
@@ -64,7 +64,7 @@ for (const width of [960, 1920]) {
       ),
     ).toBe(true)
     await page.screenshot({
-      path: `/private/tmp/lordfilm-focus-bottom-${width}.png`,
+      path: test.info().outputPath(`lordfilm-focus-bottom-${width}.png`),
     })
   })
 }
@@ -115,6 +115,8 @@ test.describe('animated card focus', () => {
       )
     })
     expect(gap).toBeCloseTo(24, 0)
-    await page.screenshot({ path: '/private/tmp/lordfilm-zoom-inset-960.png' })
+    await page.screenshot({
+      path: test.info().outputPath('lordfilm-zoom-inset-960.png'),
+    })
   })
 })

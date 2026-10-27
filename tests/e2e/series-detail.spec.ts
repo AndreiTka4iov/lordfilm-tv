@@ -44,7 +44,9 @@ test('series metadata loads without video; selected season and episode start in 
   await expect(picker.locator('[data-series-episode]')).toHaveCount(2)
   await expect(page.locator('[data-watch-button]')).toBeFocused()
   await picker.scrollIntoViewIfNeeded()
-  await page.screenshot({ path: '/private/tmp/lordfilm-series-1920.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-series-1920.png'),
+  })
   expect(videoRequests).toBe(0)
   await expect(page.locator('video')).toHaveCount(0)
   await picker.getByRole('button', { name: 'Сезон 2', exact: true }).click()
@@ -182,7 +184,9 @@ test('series grid fits a small TV and navigates between episode rows without hor
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true)
-  await page.screenshot({ path: '/private/tmp/lordfilm-series-960.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-series-960.png'),
+  })
 })
 
 test('Watch starts the selected season; description and remote navigation stay reachable', async ({

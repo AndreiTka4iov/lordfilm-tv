@@ -90,7 +90,9 @@ test('movie saves exact position on close, survives reload and appears on home',
   await expect(
     page.locator('[data-movie-group="history"] [data-movie-card]'),
   ).toHaveCount(1)
-  await page.screenshot({ path: '/private/tmp/lordfilm-watch-history.png' })
+  await page.screenshot({
+    path: test.info().outputPath('lordfilm-watch-history.png'),
+  })
 })
 test('series restores season and episode; explicit different episode starts fresh', async ({
   page,
