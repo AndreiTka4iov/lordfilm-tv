@@ -115,7 +115,8 @@ test('without an active card only the list is shown; leaving cards restores the 
     const stage = page.locator('[data-catalog-stage]')
     const tray = page.locator('[data-catalog-tray]')
     const card = stage.locator('[data-movie-card]').first()
-    await expect(card).toBeVisible()
+    await expect(card).toBeFocused()
+    await page.locator('[data-sidebar] a[href="/search/"]').focus()
     await expect(page.locator('[data-catalog-preview]')).toHaveCount(0)
     await expect(page.locator('[data-catalog-artwork]')).toHaveCount(0)
     const full = (await tray.boundingBox())?.height ?? 0
@@ -129,8 +130,65 @@ test('without an active card only the list is shown; leaving cards restores the 
     await expect(page.locator('[data-catalog-artwork]')).toHaveCount(0)
     expect((await tray.boundingBox())?.height).toBeCloseTo(full, 0)
     await page.keyboard.press('ArrowRight')
-    if (path === '/') await page.keyboard.press('ArrowDown')
     await expect(card).toBeFocused()
     await expect(page.locator('[data-catalog-preview]')).toBeVisible()
   }
+})
+
+for (const viewport of [
+  { width: 960, height: 540 },
+  { width: 1920, height: 1080 },
+]) {
+  test(`scrolling down clips the previous row at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    for (const path of ['/', '/series/']) {
+      await page.goto(path)
+      const first = page.locator('[data-movie-card]').first()
+      await first.focus()
+      await page.keyboard.press('ArrowDown')
+      await expect(first).not.toBeFocused()
+      await expect
+        .poll(async () => {
+          const previous = await first.boundingBox()
+          const tray = await page.locator('[data-catalog-tray]').boundingBox()
+          return previous && tray
+            ? previous.y + previous.height - tray.y
+            : Infinity
+        })
+        .toBeLessThanOrEqual(0)
+      const active = page.locator('[data-movie-card]:focus')
+      await expect(active).toBeInViewport({ ratio: 0.999 })
+    }
+  })
+}
+
+test('the current shelf title stays above the clipped list while navigating', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 960, height: 540 })
+  await page.goto('/')
+  await page.locator('[data-movie-card]').first().focus()
+  const title = page.locator('[data-catalog-list-title]')
+  await expect(title).toHaveText('Популярные фильмы')
+  await page.keyboard.press('ArrowDown')
+  await expect(title).toHaveText('Новинки')
+  const bounds = await title.boundingBox()
+  const tray = await page.locator('[data-catalog-tray]').boundingBox()
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(tray!.y)
+  await expect(title).toBeInViewport({ ratio: 0.999 })
+  await expect(page.locator('[data-movie-card]:focus')).toBeInViewport({
+    ratio: 0.999,
+  })
+  await expect(page.locator('[data-catalog-preview]')).toContainText(
+    'Описание фильма 1',
+  )
+  await page.screenshot({ path: '/private/tmp/lordfilm-list-title-960.png' })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.keyboard.press('ArrowUp')
+  await expect(title).toHaveText('Популярные фильмы')
+  await expect(page.locator('[data-movie-card]:focus')).toBeInViewport({
+    ratio: 0.999,
+  })
 })

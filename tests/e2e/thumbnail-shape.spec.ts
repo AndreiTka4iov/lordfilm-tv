@@ -26,7 +26,7 @@ for (const path of ['/', '/series/']) {
     await expect(cards.first()).not.toBeFocused()
     const rects = await cards.evaluateAll((nodes) =>
       nodes.slice(0, 3).map((node) => {
-        const bounds = node.firstElementChild!.getBoundingClientRect()
+        const bounds = node.querySelector('div')!.getBoundingClientRect()
         return { width: bounds.width, height: bounds.height }
       }),
     )

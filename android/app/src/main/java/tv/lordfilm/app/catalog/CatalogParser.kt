@@ -73,7 +73,7 @@ object CatalogParser {
             .put("sourceUrl", "$origin/movie/$id/$slug")
     }
 
-    fun pool(html: String, group: String, origin: String): JSONArray {
+    fun pool(html: String, group: String, origin: String, releaseYear: Int? = null): JSONArray {
         var rows: JSONArray? = null
         for (doc in Flight.documents(html)) {
             val found =
@@ -99,6 +99,7 @@ object CatalogParser {
             val row = rows?.optJSONObject(index) ?: continue
             if (group == "popular" && row.opt("inCatalog") != true) continue
             val item = preview(row, origin, group) ?: continue
+            if (releaseYear != null && item.optInt("year", -1) != releaseYear) continue
             if (!seen.add(item.getString("id"))) continue
             result.put(item)
             if (result.length() == 20) return result

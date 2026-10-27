@@ -14,16 +14,25 @@ test('remote focus expands the menu, arrows navigate and content restores focus'
   await page.keyboard.press('ArrowLeft')
   await expect(home).toBeFocused()
   await expect(menu).toHaveAttribute('data-expanded', 'true')
-  await expect
-    .poll(async () => (await main.boundingBox())?.x ?? 0)
-    .toBeGreaterThan(before?.x ?? 0)
-  await expect
-    .poll(async () => (await main.boundingBox())?.width ?? Infinity)
-    .toBeLessThan(before?.width ?? 0)
-  const expanded = await main.boundingBox()
+  const frames = await main.evaluate(async (node) => {
+    const sizes: { x: number; width: number }[] = []
+    for (let i = 0; i < 16; i++) {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+      const bounds = node.getBoundingClientRect()
+      sizes.push({ x: bounds.x, width: bounds.width })
+    }
+    return sizes
+  })
+  for (const bounds of frames) {
+    expect(bounds.x).toBeCloseTo(before?.x ?? 0, 1)
+    expect(bounds.width).toBeCloseTo(before?.width ?? 0, 1)
+  }
   const sidebar = await menu.boundingBox()
-  expect(expanded?.width).toBeLessThan(before?.width ?? 0)
-  expect(expanded?.x).toBeGreaterThan((sidebar?.x ?? 0) + (sidebar?.width ?? 0))
+  expect((sidebar?.x ?? 0) + (sidebar?.width ?? 0)).toBeGreaterThan(
+    before?.x ?? 0,
+  )
   await page.keyboard.press('ArrowDown')
   await expect(movies).toBeFocused()
   await page.keyboard.press('Enter')

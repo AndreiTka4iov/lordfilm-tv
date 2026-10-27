@@ -9,7 +9,7 @@
       {
         'type': 'afterResponse',
         'language': 'text/javascript',
-        'code': "pm.test('status', () => pm.response.to.have.status(200));\nconst pool = pm.response.json();\npm.test('20 unique items', () => { pm.expect(pool.items).to.have.length(20); pm.expect(new Set(pool.items.map(x => x.id)).size).to.equal(20); });\npm.test('group', () => pm.expect(pool.group).to.equal('new'));",
+        'code': "pm.test('status', () => pm.response.to.have.status(200));\nconst pool = pm.response.json();\npm.test('20 unique items', () => { pm.expect(pool.items).to.have.length(20); pm.expect(new Set(pool.items.map(x => x.id)).size).to.equal(20); });\npm.test('group', () => pm.expect(pool.group).to.equal('new'));\npm.test('current-year releases only', () => pool.items.forEach(item => pm.expect(item.year).to.equal(new Date().getUTCFullYear())));",
       },
     ],
 }

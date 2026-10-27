@@ -31,11 +31,13 @@ export function MovieCard({
   showPoster,
   href,
   onFocus,
+  focused = false,
 }: {
   movie: MoviePreview
   showPoster: boolean
   href: string
   onFocus?: () => void
+  focused?: boolean
 }) {
   return (
     <Link
@@ -45,8 +47,14 @@ export function MovieCard({
       data-movie-id={movie.id}
       aria-label={movie.title}
       data-movie-card
-      className="group relative block rounded-xl [--movie-focus-scale:1.04] transition-transform duration-180 ease-out focus:scale-[var(--movie-focus-scale)] motion-reduce:[--movie-focus-scale:1] motion-reduce:transition-none text-inherit no-underline outline-none focus:z-10 focus:outline-solid focus:outline-2 focus:outline-offset-4 focus:outline-[var(--mantine-primary-color-filled)]"
+      data-focused={focused || undefined}
+      className={`group relative block rounded-xl [--movie-focus-scale:1.04] transition-transform duration-180 ease-out focus:scale-[var(--movie-focus-scale)] motion-reduce:[--movie-focus-scale:1] motion-reduce:transition-none text-inherit no-underline outline-none focus:z-10 focus:outline-solid focus:outline-2 focus:outline-offset-4 focus:outline-transparent ${focused ? 'z-10 scale-[var(--movie-focus-scale)] outline-solid outline-2 outline-offset-4 outline-transparent' : ''}`}
     >
+      <span
+        aria-hidden="true"
+        data-movie-focus-ring
+        className={`pointer-events-none absolute -inset-1.5 z-20 origin-top-left rounded-[18px] border-2 border-[var(--mantine-primary-color-filled)] opacity-0 group-focus:opacity-100 ${focused ? 'opacity-100' : ''}`}
+      />
       <div className="relative flex aspect-[2/3] w-full min-h-0 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--mantine-color-default)] text-[var(--mantine-color-dimmed)]">
         {showPoster && movie.poster ? (
           <Poster key={movie.poster} src={movie.poster} />

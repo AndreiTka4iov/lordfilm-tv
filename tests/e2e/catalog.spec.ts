@@ -133,7 +133,9 @@ test('remote focus enlarges vertical cards without scrolling after focus', async
   const first = row.locator('[data-movie-card]').first()
   const next = row.locator('[data-movie-card]').nth(1)
   await expect(first).toBeVisible()
-  const initial = await first.boundingBox()
+  const initial = await first.evaluate((node) => ({
+    width: Number.parseFloat(getComputedStyle(node).width),
+  }))
   const neighbour = await next.boundingBox()
   await page.getByRole('main').focus()
   await page.keyboard.press('ArrowDown')
@@ -174,11 +176,12 @@ test('remote focus enlarges vertical cards without scrolling after focus', async
   await expect
     .poll(async () => (await last.boundingBox())?.width ?? 0)
     .toBeCloseTo((initial?.width ?? 0) * 1.04, 1)
-  const end = await last.boundingBox()
-  if (!end) throw new Error('Missing last card bounds')
-  expect(end.x + end.width + 6).toBeLessThanOrEqual(
-    container.x + container.width + 1,
-  )
+  await expect
+    .poll(async () => {
+      const end = await last.boundingBox()
+      return end ? end.x + end.width + 6 : Infinity
+    })
+    .toBeLessThanOrEqual(container.x + container.width + 1)
   await page.keyboard.press('ArrowRight')
   await expect(last).toBeFocused()
   await page.keyboard.press('Escape')

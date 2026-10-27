@@ -4,6 +4,6 @@ import { spawnSync } from 'node:child_process'
 const result = spawnSync('npm', ['run', 'build:export'], {
   stdio: 'inherit',
   shell: process.platform === 'win32',
-  env: { ...process.env, NEXT_PUBLIC_CATALOG_API_URL: '' },
+  env: { ...process.env, NEXT_PUBLIC_CATALOG_API_URL: '', APP_NATIVE_TV: '1' },
 })
 process.exit(result.status ?? 1)

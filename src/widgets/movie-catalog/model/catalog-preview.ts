@@ -1,26 +1,36 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { getMovieDetail, type MoviePreview } from '@/entities/movie'
 import {
-  getMovieDetail,
-  type MovieDetail,
-  type MoviePreview,
-} from '@/entities/movie'
+  previewCacheKey,
+  readPreview,
+  touchPreview,
+  rememberPreview,
+} from './preview-cache'
 
-export const CatalogPreviewContext = createContext<
-  (movie: MoviePreview) => void
->(() => {})
+export const CatalogPreviewContext = createContext<{
+  focusedKey: string | null
+  select: (movie: MoviePreview, key: string) => void
+}>({ focusedKey: null, select: () => {} })
+export function catalogFocusKey(scope: string, movie: MoviePreview) {
+  return `${scope}:${movie.id}:${movie.slug}`
+}
 export function useCatalogPreview() {
   return useContext(CatalogPreviewContext)
 }
 export function usePreviewDetail(movie: MoviePreview | null) {
-  const [result, setResult] = useState<{
-    id: string
-    slug: string
-    detail: MovieDetail | null
-  }>()
   const id = movie?.id
   const slug = movie?.slug
+  const poster = movie?.poster ?? null
+  const key = id && slug ? previewCacheKey(id, slug) : null
+  const selection = useMemo(() => ({ key }), [key])
+  const [result, setResult] = useState<{
+    selection: typeof selection
+    failed: boolean
+  }>()
+  const cached = key ? readPreview(key) : undefined
   useEffect(() => {
-    if (!id || !slug) return
+    if (!id || !slug || !key) return
+    if (touchPreview(key)) return
     const controller = new AbortController()
     let active = true
     let timeout: number | undefined
@@ -29,10 +39,13 @@ export function usePreviewDetail(movie: MoviePreview | null) {
       void getMovieDetail(id, slug, controller.signal)
         .then(
           (detail) => {
-            if (active) setResult({ id, slug, detail })
+            if (active) {
+              rememberPreview(key, detail, poster)
+              setResult({ selection, failed: false })
+            }
           },
           () => {
-            if (active) setResult({ id, slug, detail: null })
+            if (active) setResult({ selection, failed: true })
           },
         )
         .finally(() => window.clearTimeout(timeout))
@@ -43,6 +56,10 @@ export function usePreviewDetail(movie: MoviePreview | null) {
       window.clearTimeout(timer)
       window.clearTimeout(timeout)
     }
-  }, [id, slug])
-  return result?.id === id && result?.slug === slug ? result : undefined
+  }, [id, slug, key, poster, selection])
+  if (!id || !slug || !key) return undefined
+  if (cached) return { id, slug, detail: cached }
+  return result?.selection === selection && result.failed
+    ? { id, slug, detail: null }
+    : undefined
 }

@@ -13,12 +13,12 @@ import {
 } from '@/shared/lib'
 import { messages } from '@/shared/locales'
 import { CatalogStage } from './catalog-stage'
-import { useCatalogPreview } from '../model/catalog-preview'
+import { catalogFocusKey, useCatalogPreview } from '../model/catalog-preview'
 import { useMoviePool } from '../model/use-movie-pool'
 
 function SeriesGrid() {
   const { state, retry } = useMoviePool('series')
-  const preview = useCatalogPreview()
+  const { select: preview, focusedKey } = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
   useEffect(() => {
     if (state.status !== 'ready') return
@@ -125,7 +125,12 @@ function SeriesGrid() {
                   <li key={movie.id} data-poster-id={movie.id}>
                     <MovieCard
                       movie={movie}
-                      onFocus={() => preview(movie)}
+                      onFocus={() =>
+                        preview(movie, catalogFocusKey('series-catalog', movie))
+                      }
+                      focused={
+                        focusedKey === catalogFocusKey('series-catalog', movie)
+                      }
                       showPoster={visible.has(movie.id)}
                       href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=series-catalog`}
                     />

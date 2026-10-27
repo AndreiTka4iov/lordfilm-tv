@@ -22,7 +22,7 @@ import { IconArrowLeft, IconPlayerPlayFilled } from '@tabler/icons-react'
 import { useWatchHistory, type EpisodeSelection } from '@/entities/movie'
 import { SeriesEpisodes } from './series-episodes'
 import { messages } from '@/shared/locales'
-import { focusSidebar, focusCatalogSearch } from '@/shared/lib'
+import { focusSidebar, focusCatalogSearch, savedPageFocus } from '@/shared/lib'
 import { useMovieDetail } from '../model/use-movie-detail'
 
 const VideoPlayer = dynamic(
@@ -54,7 +54,8 @@ function MovieContent({
   const router = useRouter()
   useEffect(() => {
     if (document.activeElement?.closest('[data-sidebar], [role=search]')) return
-    if (state.status === 'ready') watch.current?.focus({ preventScroll: true })
+    if (state.status === 'ready')
+      (savedPageFocus() ?? watch.current)?.focus({ preventScroll: true })
     else if (state.status === 'error' || state.status === 'not-found')
       back.current?.focus({ preventScroll: true })
   }, [state.status])

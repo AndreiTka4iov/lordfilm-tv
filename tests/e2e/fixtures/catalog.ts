@@ -7,7 +7,7 @@ export function pool(group: string) {
       id: String(index + 1),
       slug: `movie-${index + 1}`,
       title: `${group} фильм ${index + 1}`,
-      year: 2026,
+      year: group === 'new' ? new Date().getUTCFullYear() : 2026,
       poster: `https://image.tmdb.org/t/p/w500/test-${group}-${index + 1}.jpg`,
       rating: 8.2,
       kind: group === 'series' ? 'series' : 'movie',

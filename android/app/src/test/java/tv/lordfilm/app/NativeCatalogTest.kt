@@ -208,4 +208,43 @@ class NativeCatalogTest {
         }
         failure(422) { PlaybackParser.playback("source:{hls:\"$media\"}", 1) }
     }
+
+    @Test
+    fun newReleasesUseTheCurrentYearCategoryAndRejectOldFilms() {
+        val year =
+            java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                .get(java.util.Calendar.YEAR)
+        val rows =
+            JSONArray().put(item(90).put("year", 1995)).put(item(91).put("year", JSONObject.NULL))
+        for (index in 1..20) rows.put(item(index).put("year", year))
+        var requested = ""
+        val result = catalog { url, _, _ ->
+            requested = url
+            flight(JSONObject().put("initialList", JSONObject().put("items", rows)))
+        }
+            .resolve("/v1/catalog/pools/new", RequestToken())
+        assertEquals("$origin/catalog/category/$year", requested)
+        val items = result.getJSONArray("items")
+        assertEquals(20, items.length())
+        assertEquals("1", items.getJSONObject(0).getString("id"))
+        for (index in 0 until items.length()) assertEquals(
+            year,
+            items.getJSONObject(index).getInt("year"),
+        )
+        failure(502) {
+            CatalogParser.pool(
+                flight(
+                    JSONObject()
+                        .put(
+                            "initialList",
+                            JSONObject()
+                                .put("items", JSONArray(listOf(item(90).put("year", 1995)))),
+                        )
+                ),
+                "new",
+                origin,
+                year,
+            )
+        }
+    }
 }

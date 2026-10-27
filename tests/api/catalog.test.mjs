@@ -16,7 +16,7 @@ const rows = Array.from({ length: 24 }, (_, i) => ({
   newsId: String(i + 1),
   slug: `film-${i}`,
   title: `Film ${i}`,
-  year: 2026,
+  year: new Date().getUTCFullYear(),
   poster: '/poster.webp',
   posterUrl: '/poster.webp',
   anchorId: `films-rank-${i + 1}`,
@@ -98,7 +98,7 @@ test('real HTTP flow: each pool has 20, independent cache, coalescing and expiry
   }
   assert.deepEqual(Object.fromEntries(calls), {
     '/top-100': 1,
-    '/filmy': 1,
+    [`/catalog/category/${new Date().getUTCFullYear()}`]: 1,
     '/serialy': 1,
   })
   await fetch(urls[0])
@@ -110,18 +110,27 @@ test('real HTTP flow: each pool has 20, independent cache, coalescing and expiry
   assert.equal((await fetch(urls[0], { method: 'POST' })).status, 405)
 })
 test('upstream failures, redirects, malformed content and short catalogs return 502', async (t) => {
-  for (const mode of ['error', 'redirect', 'malformed', 'short', 'oversize']) {
+  for (const mode of [
+    'error',
+    'redirect',
+    'malformed',
+    'short',
+    'oversize',
+    'old',
+  ]) {
     const origin = await listen(
       createServer((req, res) => {
         res.setHeader('Content-Type', 'text/html')
         if (mode === 'error') res.writeHead(503)
         if (mode === 'redirect') res.writeHead(302, { Location: '/login' })
         res.end(
-          mode === 'short'
-            ? page(rows.slice(0, 12))
-            : mode === 'oversize'
-              ? 'x'.repeat(4 * 1024 * 1024 + 1)
-              : 'unavailable',
+          mode === 'old'
+            ? page(rows.map((row) => ({ ...row, year: 1995 })))
+            : mode === 'short'
+              ? page(rows.slice(0, 12))
+              : mode === 'oversize'
+                ? 'x'.repeat(4 * 1024 * 1024 + 1)
+                : 'unavailable',
         )
       }),
       t,
@@ -169,4 +178,22 @@ test('expired data is not served when the source fails', async () => {
   await assert.rejects(service.get('new'))
   await assert.rejects(service.get('new'))
   assert.equal(calls, 3)
+})
+
+test('new releases skip old and unknown years before taking 20 distinct films', () => {
+  const year = new Date().getUTCFullYear()
+  const mixed = [
+    { ...rows[0], id: '900', year: 1995 },
+    { ...rows[0], id: '901', year: null },
+    ...rows.slice(0, 10),
+    rows[0],
+    ...rows.slice(10),
+  ]
+  const items = parsePool(page(mixed), 'new', 'https://example.com', year)
+  assert.equal(items.length, 20)
+  assert.ok(items.every((item) => item.year === year))
+  assert.equal(items[0].id, '1')
+  assert.throws(() =>
+    parsePool(page(mixed.slice(0, 12)), 'new', 'https://example.com', year),
+  )
 })

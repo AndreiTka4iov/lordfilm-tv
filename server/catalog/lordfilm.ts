@@ -70,7 +70,12 @@ function findRows(value: unknown, group: Group): unknown[] | null {
   }
   return null
 }
-export function parsePool(html: string, group: Group, origin: string): Movie[] {
+export function parsePool(
+  html: string,
+  group: Group,
+  origin: string,
+  releaseYear?: number,
+): Movie[] {
   const rows = documents(html)
     .map((value) => findRows(value, group))
     .find((value) => value !== null)
@@ -93,6 +98,7 @@ export function parsePool(html: string, group: Group, origin: string): Movie[] {
     if (group === 'popular' && value.inCatalog !== true) continue
     const fields = record(value.xfields) ? value.xfields : {}
     const year = numeric(value.year, 1888, 2200)
+    if (releaseYear !== undefined && year !== releaseYear) continue
     result.push({
       id,
       slug,
@@ -212,12 +218,18 @@ export class LordFilmSource
     this.origin = url.origin
   }
   async load(group: Group): Promise<Movie[]> {
+    const year = new Date().getUTCFullYear()
     const paths: Record<Group, string> = {
       popular: '/top-100',
-      new: '/filmy',
+      new: `/catalog/category/${year}`,
       series: '/serialy',
     }
-    return parsePool(await this.fetchHtml(paths[group]), group, this.origin)
+    return parsePool(
+      await this.fetchHtml(paths[group]),
+      group,
+      this.origin,
+      group === 'new' ? year : undefined,
+    )
   }
   async search(value: string) {
     const query = normalizeSearchQuery(value)

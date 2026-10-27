@@ -9,6 +9,7 @@ import {
 } from '@/entities/movie'
 import {
   focusSidebar,
+  hasPageFocusBookmark,
   focusCatalogSearch as focusSearch,
   navigateMovieGrid,
 } from '@/shared/lib'
@@ -137,6 +138,11 @@ function SearchContent() {
     query.length <= 200 &&
     !/[\u0000-\u001f\u007f]/.test(query)
   useEffect(() => {
+    if (
+      document.activeElement?.closest('[data-sidebar]') ||
+      hasPageFocusBookmark()
+    )
+      return
     const bookmark = window.history.state?.searchFocus as
       { query?: string } | undefined
     if (!params.get('focus') && bookmark?.query !== query) focusSearch()

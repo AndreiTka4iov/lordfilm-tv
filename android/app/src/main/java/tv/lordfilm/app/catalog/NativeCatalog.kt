@@ -4,6 +4,7 @@ import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -43,14 +44,20 @@ class NativeCatalog(private val origin: String, private val fetcher: HtmlFetcher
         Regex("/v1/catalog/pools/(popular|new|series)/?").matchEntire(parts[0])?.let {
             if (parameters.isNotEmpty()) throw SourceFailure(400)
             val group = it.groupValues[1]
+            val year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR)
             val source =
-                mapOf("popular" to "/top-100", "new" to "/filmy", "series" to "/serialy")
+                mapOf(
+                        "popular" to "/top-100",
+                        "new" to "/catalog/category/$year",
+                        "series" to "/serialy",
+                    )
                     .getValue(group)
             val items =
                 CatalogParser.pool(
                     fetcher.fetch(origin + source, 4 * 1024 * 1024, token),
                     group,
                     origin,
+                    if (group == "new") year else null,
                 )
             return JSONObject()
                 .put("group", group)

@@ -50,10 +50,15 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:android:web
-      - run: ./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets assembleRelease --no-daemon
+      - run: ./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets verifyReleaseWebAssets --no-daemon
         working-directory: android
       - uses: actions/upload-artifact@v4
         with:
           name: lordfilm-tv-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lordfilm-tv-release-unsigned
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error

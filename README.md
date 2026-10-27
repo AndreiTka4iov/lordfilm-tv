@@ -18,7 +18,7 @@ Browse movies and TV shows in a clean, cinema-inspired interface built for the c
 | Stay on the remote          | Move with the arrows, select with OK, and return with Back. The sidebar expands when you focus it.                 |
 | Find your next watch        | Search by title or actor on the Search page. Results update as you type. Voice input is available where supported. |
 | Settle into a series        | Choose a season and episode, switch audio tracks or quality when available, and move to the next episode.          |
-| Make it yours               | Choose a light or dark theme, with clear focus states and smooth card transitions.                                 |
+| Pick up where you left off  | Resume the last 20 movies and series at the saved episode and playback position.                                   |
 | Run it your way             | Install the standalone Android APK, or self-host the web client with its separate API.                             |
 
 The interface is currently in **Russian**. This is an independent community project built around public LordFilm sources.
@@ -135,7 +135,7 @@ npm ci
 npm run android:build
 ```
 
-Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The command creates a fresh web export, checks Kotlin formatting, runs Kotlin tests and Android Lint, and verifies that every web asset is included in the APK. The Gradle Wrapper is included in the repository. `NEXT_PUBLIC_CATALOG_API_URL` applies only to the web app and is not used inside the APK.
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`. The command creates a fresh web export, checks Kotlin formatting, runs Kotlin tests and Android Lint, and verifies that every web asset is included in the APK. The Gradle Wrapper is included in the repository. `NEXT_PUBLIC_CATALOG_API_URL` applies only to the web app and is not used inside the APK. Android preparation builds a 1280 CSS-pixel TV viewport (`APP_NATIVE_TV=1`), fitted to the display by WebView overview mode; ordinary web and static exports retain the responsive device-width viewport. Native text zoom stays at 100%, with gesture zoom and text autosizing disabled.
 
 The catalog opens immediately on launch. The app has no connection settings or local HTTP server. The source origin is fixed at build time. To use a different source mirror:
 
@@ -151,21 +151,21 @@ The shell loads only packaged pages through WebViewAssetLoader at the HTTPS orig
 
 Bridge protocol: request `{id, path}`, response `{id, status, body}`, cancellation `{cancel: id}`. Only known catalog operations are accepted; arbitrary URLs are rejected. Android runs two network jobs with a queue of up to six; excess requests receive 503. Responses are limited to 128 KiB, source HTML to 4 MiB, and provider HTML to 2 MiB. Each HTTP call has a 10-second timeout. Requests are cancelled when the screen or search query changes. Native connections and jobs are closed when the Activity is destroyed. Catalog data and search results are not cached on disk.
 
-Source-hosted posters and backgrounds (`xfields.poster` / `posterbg`) take priority. For popular titles, poster addresses are resolved lazily, with up to two concurrent page requests. Up to 64 addresses are kept in memory for five minutes; this cache contains neither HTML nor images. Source images and fallback TMDB posters are fetched by the native HTTP client and streamed to WebView, with up to four concurrent transfers and a 4 MiB limit per image. There is no custom image cache. For `image.tmdb.org`, the app uses Cloudflare DNS-over-HTTPS with Google DNS as a fallback and TLS verification. This avoids system DNS responses that map the domain to loopback without changing device settings. Other domains use system DNS. Local and loopback DNS answers are rejected, and positive answers are kept for up to 30 seconds. At least one of these resolvers must be reachable over HTTPS. The app neither disables certificate verification nor accepts arbitrary image URLs.
+Source-hosted posters and backgrounds (`xfields.poster` / `posterbg`) take priority. For popular titles, poster addresses are resolved lazily, with up to two concurrent page requests. Up to 64 addresses are kept in memory for five minutes; this cache contains neither HTML nor images. Source images and fallback TMDB posters are fetched by the native HTTP client and streamed to WebView, with up to four concurrent transfers and a 4 MiB limit per image. Preview backgrounds are retained by the web client for up to 10 recently used previews; other images have no custom cache. For `image.tmdb.org`, the app uses Cloudflare DNS-over-HTTPS with Google DNS as a fallback and TLS verification. This avoids system DNS responses that map the domain to loopback without changing device settings. Other domains use system DNS. Local and loopback DNS answers are rejected, and positive answers are kept for up to 30 seconds. At least one of these resolvers must be reachable over HTTPS. The app neither disables certificate verification nor accepts arbitrary image URLs.
 
 Arrows and OK use the existing TV navigation. Back is passed to the current screen first, then to navigation history; at the root, the app asks before exiting. Media keys are forwarded to the web player. When the app enters the background, the player closes and releases its resources. Automatic playback restoration is not implemented. Voice input depends on Web Speech support in WebView; keyboard input remains available when it is unsupported.
 
 ```sh
 npm run test:android:web # Export, native transport without an HTTP API, search, and cancellation
 cd android
-./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets assembleRelease
+./gradlew checkKotlinFormat testDebugUnitTest lintDebug verifyDebugWebAssets verifyReleaseWebAssets
 ```
 
 The editable banner is `android/branding/tv-banner.svg`; the square icon is `android/app/src/main/res/drawable/app_icon.xml`. After changing the banner, run `npm run android:branding` (requires Chromium: `npx playwright install chromium`). The generated PNG is committed, so normal APK builds do not require artwork generation.
 
 Format Kotlin and Gradle scripts with `./gradlew formatKotlin` from the `android/` directory.
 
-Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`. Sign it with your own permanent Android key before distributing it. The debug APK uses a test key and is intended for testing. GitHub Actions saves it as an artifact of the Android job. External sources and CDNs may still be unavailable on a particular network; their availability no longer depends on your own server.
+Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`. Sign it with your own permanent Android key before distributing it. The debug APK uses a test key and is intended for testing. GitHub Actions saves the debug APK and the unsigned release APK as separate artifacts of the Android job. See [release preparation](docs/RELEASE.md). External sources and CDNs may still be unavailable on a particular network; their availability no longer depends on your own server.
 
 ## API and data source
 
@@ -178,7 +178,7 @@ Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`. Sign i
 
 Contract: [OpenAPI](postman/specs/catalog.openapi.json). Postman requests, local mocks, and simulations are in `postman/`. A Postman account is not required to run the app or automated tests.
 
-The adapter reads data from public LordFilm pages without executing their scripts. `popular` uses `/top-100`, `new` uses `/filmy`, and `series` uses `/serialy`. Ordering comes from the source: the New Releases shelf does not guarantee release-date sorting. Titles are unique within each collection but may appear in multiple collections. Search uses `/search` with `search_text_mode=full`. Pagination is not implemented; users are prompted to refine the query when the result limit is reached.
+The adapter reads data from public LordFilm pages without executing their scripts. `popular` uses `/top-100`, `new` uses `/catalog/category/{current UTC year}`, and `series` uses `/serialy`. Ordering comes from the source: New Releases accepts only films released in the current UTC year, preserving their source order. Missing or short year categories return an upstream error instead of filling the shelf with older films. Titles are unique within each collection but may appear in multiple collections. Search uses `/search` with `search_text_mode=full`. Pagination is not implemented; users are prompted to refine the query when the result limit is reached.
 
 The web API caches collections on the server for five minutes and coalesces concurrent requests. Search and playback responses are not cached. Source failures return 502 and timeouts return 504; missing data is not replaced with fictional entries. HTML is limited to 4 MiB, and source requests have a 10-second timeout. CORS permits only the configured origin. There is no arbitrary URL proxy.
 
@@ -186,11 +186,11 @@ Playback uses the Collaps provider. Video is streamed directly from the CDN; the
 
 ## Memory and TV navigation
 
-The client retains only the current screen's data: up to 60 home screen titles or 40 search results. Catalog data is not cached in localStorage or IndexedDB. Requests are cancelled when leaving a screen or changing the query, and stale responses are ignored. A shared IntersectionObserver unloads offscreen posters.
+The client retains the current screen data (up to 60 home titles or 40 search results) and the 10 most recently used successful previews. Preview descriptions, artwork URLs, and loaded background image elements are kept in memory across client navigation; the least recently used preview is evicted. Failed and cancelled requests are not cached. Reloading clears this preview cache. Catalog data is not cached in localStorage or IndexedDB. Requests are cancelled when leaving a screen or changing the query, and stale responses are ignored. A shared IntersectionObserver unloads offscreen posters.
 
 The player and HLS.js load only after selecting Watch. Adaptive quality is capped at 720p by default. The target buffer is 10 seconds, the maximum is 20 seconds / 8 MiB, and the back buffer is zero. These are HLS settings, not a hard limit on browser memory. Closing the player destroys HLS, its worker, MediaSource, requests, and timers.
 
-Arrows move focus. Left from the content edge opens the menu; Right from the menu returns to the content. In the player, OK/Space toggles playback, Left/Right on the video seek by 10 seconds, Up opens the controls, and Back/Escape closes the player. Voice input starts only when the microphone button is selected.
+Each catalog focuses its first card on a fresh visit and restores its last selection from session storage on return or reload. If a saved card is no longer available, the first available card is selected after loading. An active sidebar or search field keeps focus. Left from the content edge opens the menu; Right from the menu returns to the content. Catalog focus is tracked per shelf and movie, so brief intermediate blur events do not reset selection. The sidebar overlays content without changing its width. In the player, OK/Space toggles playback, Left/Right on the video seek by 10 seconds, Up opens the controls, and Back/Escape closes the player. Voice input starts only when the microphone button is selected.
 
 ## Development and contributions
 

@@ -6,7 +6,7 @@ Failure-only stand-in for the public LordFilm HTML source. Handler: `postman/moc
 
 ## Execution
 
-Run `postman simulation run postman/simulations/source-failure/source-failure.sim.yaml --port 4701 --output ndjson`. Wait for `listening`. Path routing adds `/source`; when running the real adapter against this simulation, use a local HTTP relay that forwards `/top-100`, `/filmy`, `/serialy` to `http://localhost:4701/source` plus the request path. The source origin deliberately accepts no path prefix. Stop the simulation with Ctrl+C. Regular automated HTTP failure and timeout coverage: `npm run test:api`.
+Run `postman simulation run postman/simulations/source-failure/source-failure.sim.yaml --port 4701 --output ndjson`. Wait for `listening`. Path routing adds `/source`; when running the real adapter against this simulation, use a local HTTP relay that forwards `/top-100`, `/catalog/category/{current UTC year}`, `/serialy` to `http://localhost:4701/source` plus the request path. The source origin deliberately accepts no path prefix. Stop the simulation with Ctrl+C. Regular automated HTTP failure and timeout coverage: `npm run test:api`.
 
 ## Assumptions
 
@@ -15,6 +15,8 @@ Run `postman simulation run postman/simulations/source-failure/source-failure.si
 ## Observations
 
 <!-- begin:observations -->
+
+- 2026-10-28: Real API requested `/catalog/category/2026`; simulation logged 503 from the source member and the API returned 502 `UPSTREAM_UNAVAILABLE`, with no older-catalog fallback. Live saved `new` request separately passed all four assertions (status, count/uniqueness, group, current release year).
 
 - 2026-10-25: Real `CatalogService` + `LordFilmSource` + HTTP server, through a temporary local relay, returned 502 for all three groups. Simulation logged GET `/top-100`, `/filmy`, `/serialy`, each 503. Every member received traffic.
 

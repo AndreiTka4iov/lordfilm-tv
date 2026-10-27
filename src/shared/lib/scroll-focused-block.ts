@@ -8,11 +8,16 @@ export function scrollFocusedBlock(target: HTMLElement) {
     (sidebar
       ? window.innerHeight - sidebar.getBoundingClientRect().bottom
       : 16) + 24
-  block.scrollIntoView({
-    block: 'nearest',
-    inline: 'nearest',
-    behavior: 'instant',
-  })
+  const tray = target.closest<HTMLElement>('[data-catalog-tray]')
+  const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 'instant'
+    : 'smooth'
+  if (!tray)
+    block.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'instant',
+    })
   const bounds = block.getBoundingClientRect()
   const focusBounds = target.getBoundingClientRect()
   const style = window.getComputedStyle(target)
@@ -32,7 +37,6 @@ export function scrollFocusedBlock(target: HTMLElement) {
     height:
       Math.max(bounds.bottom, focusBottom) - Math.min(bounds.top, focusTop),
   }
-  const tray = target.closest<HTMLElement>('[data-catalog-tray]')
   if (tray) {
     const trayBounds = tray.getBoundingClientRect()
     const bottom = Math.min(window.innerHeight - inset, trayBounds.bottom - 8)
@@ -40,7 +44,22 @@ export function scrollFocusedBlock(target: HTMLElement) {
       rect.height > bottom - trayBounds.top - 8
         ? rect.top - trayBounds.top - 8
         : rect.bottom - bottom
-    tray.scrollBy({ top: offset, behavior: 'instant' })
+    tray.scrollBy({ top: offset, behavior })
+    const shelf = target.closest<HTMLElement>('ul')
+    if (shelf && shelf.scrollWidth > shelf.clientWidth) {
+      const shelfBounds = shelf.getBoundingClientRect()
+      const centerX = (focusBounds.left + focusBounds.right) / 2
+      const halfWidth = (target.offsetWidth / 2 + ring) * scale
+      const left = centerX - halfWidth
+      const right = centerX + halfWidth
+      shelf.scrollBy({
+        left:
+          left < shelfBounds.left + 20
+            ? left - shelfBounds.left - 20
+            : Math.max(0, right - shelfBounds.right + 20),
+        behavior,
+      })
+    }
   } else {
     const offset =
       rect.height > window.innerHeight - inset * 2

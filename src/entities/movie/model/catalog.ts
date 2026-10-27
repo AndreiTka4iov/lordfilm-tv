@@ -87,5 +87,11 @@ export function parseMoviePool(
     value.items.length !== 20
   )
     throw new Error('Invalid catalog pool')
-  return parseMoviePreviews(value.items, 20)
+  const items = parseMoviePreviews(value.items, 20)
+  if (
+    group === 'new' &&
+    items.some((item) => item.year !== new Date().getUTCFullYear())
+  )
+    throw new Error('Invalid release year')
+  return items
 }

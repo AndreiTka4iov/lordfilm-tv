@@ -1,3 +1,4 @@
+import { savedPageFocus } from './page-focus'
 /** Resolve current DOM targets on demand; never retain page nodes across routes. */
 export function focusSidebar() {
   const target =
@@ -13,6 +14,7 @@ export function focusSidebar() {
 }
 export function contentFocusTarget(): HTMLElement | null {
   return (
+    savedPageFocus() ??
     document.querySelector<HTMLElement>(
       '[data-movie-detail] [data-detail-last-focus]',
     ) ??
@@ -32,6 +34,7 @@ export function contentFocusTarget(): HTMLElement | null {
       '[data-search-results] [data-movie-card]',
     ) ??
     document.querySelector<HTMLElement>('[data-search-action]') ??
+    document.querySelector<HTMLElement>('[data-movie-card]') ??
     (document.querySelector('[data-search-results]')
       ? document.querySelector<HTMLElement>('[data-catalog-search]')
       : null)

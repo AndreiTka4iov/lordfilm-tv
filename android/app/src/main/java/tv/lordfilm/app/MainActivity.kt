@@ -54,6 +54,13 @@ class MainActivity : ComponentActivity() {
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
+                    useWideViewPort = true
+                    loadWithOverviewMode = true
+                    textZoom = 100
+                    layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
+                    setSupportZoom(false)
+                    builtInZoomControls = false
+                    displayZoomControls = false
                     allowFileAccess = false
                     allowContentAccess = false
                     mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW

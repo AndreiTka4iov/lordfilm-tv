@@ -12,7 +12,7 @@ import {
 import { messages } from '@/shared/locales'
 import { focusCatalogSearch } from '@/shared/lib'
 import { CatalogStage } from './catalog-stage'
-import { useCatalogPreview } from '../model/catalog-preview'
+import { catalogFocusKey, useCatalogPreview } from '../model/catalog-preview'
 import { useMoviePool } from '../model/use-movie-pool'
 
 function navigate(event: KeyboardEvent<HTMLElement>) {
@@ -48,8 +48,6 @@ function navigate(event: KeyboardEvent<HTMLElement>) {
     target =
       next?.[Math.min(index, next.length - 1)] ??
       adjacent?.querySelector<HTMLElement>('button')
-    if (!adjacent && event.key === 'ArrowDown')
-      target = document.querySelector<HTMLElement>('footer button')
     if (!adjacent && event.key === 'ArrowUp') {
       event.preventDefault()
       focusCatalogSearch()
@@ -58,15 +56,16 @@ function navigate(event: KeyboardEvent<HTMLElement>) {
   } else return
   event.preventDefault()
   target?.focus({ preventScroll: true })
-  target?.scrollIntoView({
-    block: 'nearest',
-    inline: 'nearest',
-    behavior: 'instant',
-  })
+  if (!target?.closest('[data-catalog-tray]'))
+    target?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'instant',
+    })
 }
 function MovieShelf({ group }: { group: CatalogGroup }) {
   const { state, retry } = useMoviePool(group)
-  const preview = useCatalogPreview()
+  const { select: preview, focusedKey } = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
   const title = messages.catalog[group]
   useEffect(() => {
@@ -76,7 +75,13 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
       { id?: string; group?: string } | undefined
     const id = query.get('focus') ?? bookmark?.id
     const selectedGroup = query.get('shelf') ?? bookmark?.group
-    if (selectedGroup !== group || !id || !/^\d{1,64}$/.test(id)) return
+    if (
+      selectedGroup !== group ||
+      !id ||
+      !/^\d{1,64}$/.test(id) ||
+      document.activeElement?.closest('[data-sidebar], [role=search]')
+    )
+      return
     const card = listRef.current?.querySelector<HTMLElement>(
       `[data-movie-id="${id}"]`,
     )
@@ -101,7 +106,14 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
       data-movie-shelf
       className="min-w-0"
     >
-      <Title id={`shelf-${group}`} order={2} size="h3" mb="lg" fw={650}>
+      <Title
+        id={`shelf-${group}`}
+        aria-hidden={focusedKey ? true : undefined}
+        order={2}
+        size="h3"
+        mb="lg"
+        fw={650}
+      >
         {title}
       </Title>
       {state.status === 'error' ? (
@@ -134,7 +146,10 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
                 >
                   <MovieCard
                     movie={movie}
-                    onFocus={() => preview(movie)}
+                    onFocus={() =>
+                      preview(movie, catalogFocusKey(group, movie))
+                    }
+                    focused={focusedKey === catalogFocusKey(group, movie)}
                     showPoster={visible.has(movie.id)}
                     href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=${group}`}
                   />
@@ -155,7 +170,7 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
 }
 function HistoryShelf() {
   const items = useWatchHistory()
-  const preview = useCatalogPreview()
+  const { select: preview, focusedKey } = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(items.length > 0)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -183,7 +198,14 @@ function HistoryShelf() {
       aria-labelledby="watch-history-title"
       className="min-w-0"
     >
-      <Title id="watch-history-title" order={2} size="h3" mb="lg" fw={650}>
+      <Title
+        id="watch-history-title"
+        aria-hidden={focusedKey ? true : undefined}
+        order={2}
+        size="h3"
+        mb="lg"
+        fw={650}
+      >
         {m.title}
       </Title>
       <ul
@@ -200,7 +222,8 @@ function HistoryShelf() {
           >
             <MovieCard
               movie={item}
-              onFocus={() => preview(item)}
+              onFocus={() => preview(item, catalogFocusKey('history', item))}
+              focused={focusedKey === catalogFocusKey('history', item)}
               showPoster={visible.has(item.id)}
               href={`/movie/?id=${item.id}&slug=${encodeURIComponent(item.slug)}&from=history`}
             />

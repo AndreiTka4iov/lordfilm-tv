@@ -15,6 +15,15 @@ val syncWebAssets by
             check(webExport.file("index.html").asFile.isFile) {
                 "Missing web export. Run npm run android:prepare from the repository root."
             }
+            check(
+                webExport
+                    .file("index.html")
+                    .asFile
+                    .readText()
+                    .contains("name=\"viewport\" content=\"width=1280\"")
+            ) {
+                "Android requires the native TV viewport. Run npm run android:prepare."
+            }
         }
     }
 
@@ -25,8 +34,8 @@ android {
         applicationId = "tv.lordfilm.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
         val sourceOrigin =
             providers.gradleProperty("lordfilmOrigin").getOrElse("https://lordfilmx13.ink")
         require(Regex("https://[a-zA-Z0-9.-]+(?::[0-9]+)?").matches(sourceOrigin))
@@ -70,20 +79,25 @@ dependencies {
 
 // Validate the APK itself: successful Kotlin compilation does not guarantee web assets were
 // packaged.
-tasks.register("verifyDebugWebAssets") {
-    dependsOn("assembleDebug")
-    doLast {
-        ZipFile(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk").get().asFile).use {
-            apk ->
-            fileTree(webAssets)
-                .files
-                .filter { it.isFile }
-                .forEach { file ->
-                    val relative = file.relativeTo(webAssets.get().asFile).invariantSeparatorsPath
-                    check(apk.getEntry("assets/$relative") != null) {
-                        "Missing packaged web asset: $relative"
+listOf("Debug", "Release").forEach { variant ->
+    tasks.register("verify${variant}WebAssets") {
+        dependsOn("assemble$variant")
+        doLast {
+            val folder = variant.lowercase()
+            val filename = if (variant == "Release") "app-release-unsigned.apk" else "app-debug.apk"
+            ZipFile(layout.buildDirectory.file("outputs/apk/$folder/$filename").get().asFile).use {
+                apk ->
+                fileTree(webAssets)
+                    .files
+                    .filter { it.isFile }
+                    .forEach { file ->
+                        val relative =
+                            file.relativeTo(webAssets.get().asFile).invariantSeparatorsPath
+                        check(apk.getEntry("assets/$relative") != null) {
+                            "Missing packaged web asset: $relative"
+                        }
                     }
-                }
+            }
         }
     }
 }

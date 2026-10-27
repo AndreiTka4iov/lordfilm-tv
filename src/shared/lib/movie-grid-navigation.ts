@@ -51,5 +51,6 @@ export function navigateMovieGrid(event: KeyboardEvent<HTMLUListElement>) {
   event.preventDefault()
   event.stopPropagation()
   target?.focus({ preventScroll: true })
-  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  if (!target?.closest('[data-catalog-tray]'))
+    target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
 }
