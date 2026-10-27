@@ -197,11 +197,30 @@ test('description scrolls with remote and returns up to watch without a trap', a
   await page.goto('/movie/?id=1&slug=movie-1')
   const watch = page.locator('[data-watch-button]')
   await expect(watch).toBeFocused()
-  await page.keyboard.press('ArrowDown')
+  // Two remote events in one frame must not be undone by delayed focus alignment.
+  const before = await watch.evaluate((node) => {
+    const down = () =>
+      document.activeElement?.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    node.focus({ preventScroll: true })
+    down()
+    const position = scrollY
+    down()
+    return position
+  })
   const copy = page.locator('[data-detail-copy]')
   await expect(copy).toBeFocused()
-  const before = await page.evaluate(() => scrollY)
-  await page.keyboard.press('ArrowDown')
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(before)
   for (let i = 0; i < 20; i++) {
     if (await watch.evaluate((node) => node === document.activeElement)) break

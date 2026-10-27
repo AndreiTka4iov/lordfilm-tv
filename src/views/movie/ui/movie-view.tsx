@@ -47,6 +47,7 @@ function MovieContent({
   const [artworkFailed, setArtworkFailed] = useState(false)
   const [watchRequested, setWatchRequested] = useState(false)
   const [episodeSelection, setEpisodeSelection] = useState<EpisodeSelection>()
+  const restorePlayerFocus = useRef(false)
   const playerReturn = useRef<EpisodeSelection | null>(null)
   const watch = useRef<HTMLButtonElement>(null)
   const back = useRef<HTMLAnchorElement>(null)
@@ -59,6 +60,20 @@ function MovieContent({
     else if (state.status === 'error' || state.status === 'not-found')
       back.current?.focus({ preventScroll: true })
   }, [state.status])
+  // The modal and its focus trap must be removed before returning focus.
+  useEffect(() => {
+    if (watchRequested || !restorePlayerFocus.current) return
+    restorePlayerFocus.current = false
+    const selected = playerReturn.current
+    const episode = selected
+      ? root.current?.querySelector<HTMLElement>(
+          `[data-series-episode="${selected.episode}"]`,
+        )
+      : null
+    const target = episode ?? watch.current
+    target?.focus({ preventScroll: true })
+    target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [watchRequested])
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (['Escape', 'GoBack', 'BrowserBack'].includes(event.key)) {
       event.preventDefault()
@@ -194,21 +209,8 @@ function MovieContent({
                 ? { initialSelection: episodeSelection }
                 : {})}
               onClose={() => {
+                restorePlayerFocus.current = true
                 setWatchRequested(false)
-                window.requestAnimationFrame(() => {
-                  const selected = playerReturn.current
-                  const episode = selected
-                    ? root.current?.querySelector<HTMLElement>(
-                        `[data-series-episode="${selected.episode}"]`,
-                      )
-                    : null
-                  const target = episode ?? watch.current
-                  target?.focus({ preventScroll: true })
-                  target?.scrollIntoView({
-                    block: 'nearest',
-                    inline: 'nearest',
-                  })
-                })
               }}
             />
           )}

@@ -1,5 +1,5 @@
 'use client'
-import type { ReactNode, KeyboardEvent } from 'react'
+import { useEffect, useRef, type ReactNode, type KeyboardEvent } from 'react'
 import { Container } from '@mantine/core'
 import {
   contentFocusTarget,
@@ -19,6 +19,19 @@ export function AppShell({
   header: ReactNode
 }) {
   const mainRef = usePageFocus()
+  const focusScroll = useRef<number | undefined>(undefined)
+  const cancelFocusScroll = () => {
+    if (focusScroll.current !== undefined)
+      window.cancelAnimationFrame(focusScroll.current)
+    focusScroll.current = undefined
+  }
+  useEffect(
+    () => () => {
+      if (focusScroll.current !== undefined)
+        window.cancelAnimationFrame(focusScroll.current)
+    },
+    [],
+  )
   function returnToMenu(event: KeyboardEvent<HTMLElement>) {
     if (
       (event.key === 'ArrowDown' || event.key === 'ArrowRight') &&
@@ -58,11 +71,15 @@ export function AppShell({
           tabIndex={-1}
           aria-label={messages.navigation.content}
           onKeyDown={returnToMenu}
+          onKeyDownCapture={cancelFocusScroll}
+          onWheelCapture={cancelFocusScroll}
           onFocusCapture={(event) => {
             const main = event.currentTarget
             const target = event.target as HTMLElement
             if (target === main || !main.contains(target)) return
-            window.requestAnimationFrame(() => {
+            cancelFocusScroll()
+            focusScroll.current = window.requestAnimationFrame(() => {
+              focusScroll.current = undefined
               if (target === document.activeElement && main.contains(target))
                 scrollFocusedBlock(target)
             })

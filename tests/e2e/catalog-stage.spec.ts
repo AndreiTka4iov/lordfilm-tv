@@ -110,24 +110,24 @@ test('unavailable preview never prevents opening a focused movie', async ({
 test('without an active card only the list is shown; leaving cards restores the full list', async ({
   page,
 }) => {
-  const details: string[] = []
-  page.on('request', (r) => {
-    if (r.url().includes('/v1/movies/')) details.push(r.url())
-  })
   for (const path of ['/', '/series/']) {
     await page.goto(path)
     const stage = page.locator('[data-catalog-stage]')
     const tray = page.locator('[data-catalog-tray]')
     const card = stage.locator('[data-movie-card]').first()
     await expect(card).toBeFocused()
+    await expect(page.locator('[data-catalog-preview]')).toContainText(
+      'Описание фильма 1',
+    )
     await page.locator('[data-sidebar] a[href="/search/"]').focus()
     await expect(page.locator('[data-catalog-preview]')).toHaveCount(0)
     await expect(page.locator('[data-catalog-artwork]')).toHaveCount(0)
     const full = (await tray.boundingBox())?.height ?? 0
-    const before = details.length
     await card.focus()
     await expect(page.locator('[data-catalog-preview]')).toBeVisible()
-    await expect.poll(() => details.length).toBeGreaterThan(before)
+    await expect(page.locator('[data-catalog-preview]')).toContainText(
+      'Описание фильма 1',
+    )
     expect((await tray.boundingBox())?.height).toBeLessThan(full)
     await page.locator('[data-sidebar] a[href="/search/"]').focus()
     await expect(page.locator('[data-catalog-preview]')).toHaveCount(0)
