@@ -31,10 +31,10 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
     if (pathname === '/search/' || pathname === '/search') {
       if (value === initialQuery.trim().replace(/\s+/g, ' ')) return
       requestedUrl.current = `/search\0${value}`
-      router.replace(
-        value ? `/search/?q=${encodeURIComponent(value)}` : '/search/',
-        { scroll: false },
-      )
+      const url = value ? `/search/?q=${encodeURIComponent(value)}` : '/search/'
+      if (!initialQuery && value.length >= 2)
+        router.push(url, { scroll: false })
+      else router.replace(url, { scroll: false })
     } else if (value.length >= 2) {
       requestedUrl.current = `/search\0${value}`
       router.push(`/search/?q=${encodeURIComponent(value)}`)

@@ -29,7 +29,7 @@ export function MovieCatalogSkeleton() {
             className="m-0 flex list-none gap-5 overflow-x-auto overscroll-x-contain p-0 pb-2 [scrollbar-width:none]"
           >
             {placeholders.map((index) => (
-              <li key={index} className="w-[clamp(144px,15vw,240px)] shrink-0">
+              <li key={index} className="w-[clamp(112px,16svh,200px)] shrink-0">
                 <MovieCardSkeleton />
               </li>
             ))}

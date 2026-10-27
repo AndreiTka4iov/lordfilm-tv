@@ -33,7 +33,7 @@ test('real HLS decodes, pauses, seeks and releases video when closed', async ({
     if (request.url().includes('/playback')) requests++
   })
   await page.goto('/movie/?id=1&slug=movie-1')
-  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  const watch = page.locator('[data-watch-button]')
   await expect(watch).toBeFocused()
   expect(requests).toBe(0)
   await watch.press('Enter')
@@ -125,7 +125,7 @@ test('series switches episode through the API and replaces the active video', as
 }) => {
   await mockPlayback(page, true)
   await page.goto('/movie/?id=1&slug=movie-1')
-  await page.getByRole('button', { name: 'Смотреть', exact: true }).click()
+  await page.locator('[data-watch-button]').click()
   await expect
     .poll(
       () =>
@@ -165,19 +165,17 @@ test('unavailable source and broken HLS provide recovery and Back exits only pla
     route.fulfill({ status: 422, json: {} }),
   )
   await page.goto('/movie/?id=1&slug=movie-1')
-  await page.getByRole('button', { name: 'Смотреть', exact: true }).click()
+  await page.locator('[data-watch-button]').click()
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
     'Видео недоступно',
   )
   await page.keyboard.press('Escape')
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeFocused()
+  await expect(page.locator('[data-watch-button]')).toBeFocused()
   await mockPlayback(page)
   await page.route('https://fixture.interkh.com/**', (route) =>
     route.fulfill({ status: 404, body: '' }),
   )
-  await page.getByRole('button', { name: 'Смотреть', exact: true }).click()
+  await page.locator('[data-watch-button]').click()
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
     'Не удалось воспроизвести',
     { timeout: 15000 },
@@ -192,7 +190,7 @@ test('Android background event closes the player and releases media', async ({
 }) => {
   await mockPlayback(page)
   await page.goto('/movie/?id=1&slug=movie-1')
-  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  const watch = page.locator('[data-watch-button]')
   await expect(watch).toBeFocused()
   await watch.press('Enter')
   await expect(page.locator('video')).toHaveCount(1)

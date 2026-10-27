@@ -19,8 +19,10 @@ import {
   Title,
 } from '@mantine/core'
 import { IconArrowLeft, IconPlayerPlayFilled } from '@tabler/icons-react'
+import { useWatchHistory, type EpisodeSelection } from '@/entities/movie'
+import { SeriesEpisodes } from './series-episodes'
 import { messages } from '@/shared/locales'
-import { focusSidebar } from '@/shared/lib'
+import { focusSidebar, focusCatalogSearch } from '@/shared/lib'
 import { useMovieDetail } from '../model/use-movie-detail'
 
 const VideoPlayer = dynamic(
@@ -40,8 +42,12 @@ function MovieContent({
   returnLabel: string
 }) {
   const { state, retry } = useMovieDetail(id, slug)
+  const history = useWatchHistory()
+  const progress = history.find((item) => item.id === id)
   const [artworkFailed, setArtworkFailed] = useState(false)
   const [watchRequested, setWatchRequested] = useState(false)
+  const [episodeSelection, setEpisodeSelection] = useState<EpisodeSelection>()
+  const playerReturn = useRef<EpisodeSelection | null>(null)
   const watch = useRef<HTMLButtonElement>(null)
   const back = useRef<HTMLAnchorElement>(null)
   const root = useRef<HTMLDivElement>(null)
@@ -105,11 +111,15 @@ function MovieContent({
     }
     if (event.key === 'ArrowDown') {
       if (target === back.current) focus(watch.current ?? retryButton)
-      else focus(copy)
+      else
+        focus(
+          root.current?.querySelector<HTMLElement>('[data-series-entry]') ??
+            root.current?.querySelector<HTMLElement>('[data-series-picker]') ??
+            copy,
+        )
       return
     }
-    if (target === back.current)
-      focus(document.querySelector<HTMLElement>('[data-catalog-search]'))
+    if (target === back.current) focusCatalogSearch()
     else focus(back.current)
   }
   const m = messages.movie
@@ -178,16 +188,31 @@ function MovieContent({
               id={id}
               slug={slug}
               title={state.movie.title}
+              movie={state.movie}
+              {...(episodeSelection
+                ? { initialSelection: episodeSelection }
+                : {})}
               onClose={() => {
                 setWatchRequested(false)
-                window.requestAnimationFrame(() =>
-                  watch.current?.focus({ preventScroll: true }),
-                )
+                window.requestAnimationFrame(() => {
+                  const selected = playerReturn.current
+                  const episode = selected
+                    ? root.current?.querySelector<HTMLElement>(
+                        `[data-series-episode="${selected.episode}"]`,
+                      )
+                    : null
+                  const target = episode ?? watch.current
+                  target?.focus({ preventScroll: true })
+                  target?.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'nearest',
+                  })
+                })
               }}
             />
           )}
           <div
-            className="relative isolate min-h-[360px] overflow-visible lg:min-h-[520px]"
+            className="relative isolate flex min-h-[460px] items-center overflow-hidden rounded-2xl bg-black text-white lg:min-h-[620px]"
             data-movie-hero
           >
             {!watchRequested &&
@@ -195,7 +220,7 @@ function MovieContent({
               (state.movie.backdrop || state.movie.poster) && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-3/4 overflow-visible"
+                  className="pointer-events-none absolute inset-0 -z-10"
                 >
                   <Image
                     src={state.movie.backdrop || state.movie.poster || ''}
@@ -207,22 +232,18 @@ function MovieContent({
                     onError={() => setArtworkFailed(true)}
                     data-movie-artwork
                   />
-                  <div className="absolute inset-0 bg-linear-to-r from-[var(--mantine-color-body)] from-0% via-[var(--mantine-color-body)]/80 via-35% to-transparent" />
-                  <div className="absolute inset-0 bg-linear-to-t from-[var(--mantine-color-body)] from-0% via-transparent via-65% to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-r from-black/95 from-0% via-black/65 via-45% to-black/10" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/85 from-0% via-transparent via-65% to-black/15" />
                 </div>
               )}
-            <div className="max-w-[min(100%,680px)] py-4 pr-4 sm:max-w-[72%] lg:max-w-[65%] lg:py-10">
+            <div className="w-full px-6 py-10 sm:max-w-[80%] sm:px-10 lg:max-w-[65%] lg:px-12 lg:py-16">
               <Title
                 order={1}
                 className="max-w-3xl text-[clamp(28px,3.4vw,60px)] leading-[1.08] text-balance"
               >
                 {state.movie.title}
               </Title>
-              <Group
-                gap="md"
-                mt="lg"
-                className="text-[var(--mantine-color-dimmed)]"
-              >
+              <Group gap="md" mt="lg" className="text-white/80">
                 {state.movie.rating !== null && (
                   <Text c="lime" fw={750}>
                     {state.movie.rating.toFixed(1)}
@@ -233,25 +254,40 @@ function MovieContent({
                 {state.movie.duration && <Text>{state.movie.duration}</Text>}
               </Group>
               {state.movie.genres.length > 0 && (
-                <Text mt={8} c="dimmed">
+                <Text mt={8} className="text-white/80">
                   {state.movie.genres.join(' · ')}
                 </Text>
               )}
+              <Text
+                mt="xl"
+                size="lg"
+                lineClamp={3}
+                className="max-w-[54ch] leading-relaxed"
+              >
+                {state.movie.description || m.noDescription}
+              </Text>
               <Group mt="xl" gap="lg">
                 <Button
                   ref={watch}
-                  onClick={() => setWatchRequested(true)}
+                  onClick={() => {
+                    playerReturn.current = null
+                    if (progress) setEpisodeSelection(undefined)
+                    setWatchRequested(true)
+                  }}
                   size="xl"
                   radius="xl"
                   leftSection={<IconPlayerPlayFilled size={22} />}
                   data-watch-button
                   className="border-0 bg-white! px-8 text-black! outline-none transition-transform duration-150 focus:scale-[1.04] focus:outline-solid focus:outline-2 focus:outline-offset-4 focus:outline-accent motion-reduce:transition-none motion-reduce:focus:scale-100"
                 >
-                  {m.watch}
+                  {progress && !progress.completed
+                    ? messages.history.resume
+                    : m.watch}
                 </Button>
                 <Button
                   variant="subtle"
                   color="gray"
+                  className="text-white!"
                   size="lg"
                   radius="xl"
                   onClick={() => {
@@ -266,17 +302,29 @@ function MovieContent({
                   {state.movie.kind === 'series' ? m.aboutSeries : m.about}
                 </Button>
               </Group>
-
-              <Text
-                mt="xl"
-                size="lg"
-                lineClamp={3}
-                className="max-w-[54ch] leading-relaxed"
-              >
-                {state.movie.description || m.noDescription}
-              </Text>
             </div>
           </div>
+          {state.movie.kind === 'series' && (
+            <SeriesEpisodes
+              id={id}
+              slug={slug}
+              onSelection={setEpisodeSelection}
+              onPlay={(selection) => {
+                setEpisodeSelection(selection)
+                playerReturn.current = selection
+                setWatchRequested(true)
+              }}
+              onUp={() => {
+                watch.current?.focus({ preventScroll: true })
+                watch.current?.scrollIntoView({ block: 'nearest' })
+              }}
+              onDown={() =>
+                root.current
+                  ?.querySelector<HTMLElement>('[data-detail-copy]')
+                  ?.focus()
+              }
+            />
+          )}
           <section
             tabIndex={0}
             data-detail-copy
@@ -331,12 +379,14 @@ function MovieFromQuery() {
   const group = query.get('from')
   const searchQuery = (query.get('q') ?? '').trim().slice(0, 200)
   const returnHref =
-    group === 'search' && searchQuery.length >= 2
-      ? `/search/?q=${encodeURIComponent(searchQuery)}&focus=${encodeURIComponent(id)}`
-      : /^\d{1,12}$/.test(id) &&
-          ['popular', 'new', 'series'].includes(group ?? '')
-        ? `/?shelf=${group}&focus=${id}`
-        : '/'
+    group === 'series-catalog' && /^\d{1,12}$/.test(id)
+      ? `/series/?focus=${id}`
+      : group === 'search' && searchQuery.length >= 2
+        ? `/search/?q=${encodeURIComponent(searchQuery)}&focus=${encodeURIComponent(id)}`
+        : /^\d{1,12}$/.test(id) &&
+            ['popular', 'new', 'series', 'history'].includes(group ?? '')
+          ? `/?shelf=${group}&focus=${id}`
+          : '/'
   if (!/^\d{1,12}$/.test(id) || !/^[a-zA-Z0-9_-]{1,200}$/.test(slug))
     return (
       <Stack>
@@ -353,7 +403,11 @@ function MovieFromQuery() {
       slug={slug}
       returnHref={returnHref}
       returnLabel={
-        group === 'search' ? messages.movie.backSearch : messages.movie.back
+        group === 'series-catalog'
+          ? messages.movie.backSeries
+          : group === 'search'
+            ? messages.movie.backSearch
+            : messages.movie.back
       }
     />
   )

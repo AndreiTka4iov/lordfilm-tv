@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useEffect, type KeyboardEvent } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button, Stack, Text, Title } from '@mantine/core'
 import {
@@ -7,62 +7,13 @@ import {
   MovieCardSkeleton,
   useVisiblePosters,
 } from '@/entities/movie'
-import { focusSidebar } from '@/shared/lib'
+import {
+  focusSidebar,
+  focusCatalogSearch as focusSearch,
+  navigateMovieGrid,
+} from '@/shared/lib'
 import { messages } from '@/shared/locales'
 import { useMovieSearch } from '../model/use-movie-search'
-function focusSearch() {
-  const input = document.querySelector<HTMLInputElement>(
-    '[data-catalog-search]',
-  )
-  input?.focus({ preventScroll: true })
-  input?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-}
-function navigate(event: KeyboardEvent<HTMLUListElement>) {
-  const card = (event.target as HTMLElement).closest<HTMLElement>(
-    '[data-movie-card]',
-  )
-  if (!card) return
-  const cards = Array.from(
-    event.currentTarget.querySelectorAll<HTMLElement>('[data-movie-card]'),
-  )
-  const cells = Array.from(event.currentTarget.children) as HTMLElement[]
-  const index = cards.indexOf(card)
-  const columns =
-    cells.filter((cell) => cell.offsetTop === cells[0]?.offsetTop).length || 1
-  const column = index % columns
-  let target: HTMLElement | undefined
-  if (event.key === 'ArrowLeft') {
-    if (column === 0) {
-      event.preventDefault()
-      event.stopPropagation()
-      focusSidebar()
-      return
-    }
-    target = cards[index - 1]
-  } else if (event.key === 'ArrowRight') {
-    if (column < columns - 1) target = cards[index + 1]
-  } else if (event.key === 'ArrowUp') {
-    if (index < columns) {
-      event.preventDefault()
-      event.stopPropagation()
-      focusSearch()
-      return
-    }
-    target = cards[index - columns]
-  } else if (event.key === 'ArrowDown') {
-    if (Math.floor(index / columns) < Math.floor((cards.length - 1) / columns))
-      target = cards[Math.min(cards.length - 1, index + columns)]
-  } else if (['Escape', 'GoBack', 'BrowserBack'].includes(event.key)) {
-    event.preventDefault()
-    event.stopPropagation()
-    focusSearch()
-    return
-  } else return
-  event.preventDefault()
-  event.stopPropagation()
-  target?.focus({ preventScroll: true })
-  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-}
 function Results({ query }: { query: string }) {
   const { state, retry } = useMovieSearch(query)
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
@@ -131,7 +82,7 @@ function Results({ query }: { query: string }) {
         ref={listRef}
         aria-label={m.results}
         aria-busy={state.status === 'loading'}
-        onKeyDown={navigate}
+        onKeyDown={navigateMovieGrid}
         onFocusCapture={(event) => {
           const card = (event.target as HTMLElement).closest<HTMLElement>(
             '[data-movie-card]',
@@ -156,7 +107,7 @@ function Results({ query }: { query: string }) {
               window.location.href,
             )
         }}
-        className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(144px,1fr))] gap-x-6 gap-y-10 p-3 sm:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]"
+        className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,144px),1fr))] lg:grid-cols-[repeat(auto-fill,minmax(min(100%,170px),1fr))] gap-x-6 gap-y-10 p-4"
       >
         {state.status === 'ready'
           ? state.result.items.map((movie) => (

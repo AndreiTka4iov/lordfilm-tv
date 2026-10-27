@@ -1,7 +1,11 @@
+'use client'
+import { usePathname } from 'next/navigation'
 import { Text } from '@mantine/core'
 import { CatalogSearch } from '@/features/catalog-search'
 import { appConfig } from '@/shared/config'
 export function PageHeader() {
+  const pathname = usePathname()
+  if (pathname !== '/search' && pathname !== '/search/') return null
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-5 py-8">
       <div className="flex min-w-0 max-w-3xl">

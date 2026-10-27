@@ -1,3 +1,7 @@
+export interface EpisodeSelection {
+  season: number
+  episode: number
+}
 export interface Playback {
   kind: 'movie' | 'series'
   type: 'hls'

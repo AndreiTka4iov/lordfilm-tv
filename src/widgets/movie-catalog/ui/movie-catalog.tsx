@@ -3,12 +3,16 @@ import { useRef, useEffect, type FocusEvent, type KeyboardEvent } from 'react'
 import { Button, Text, Title } from '@mantine/core'
 import {
   catalogGroups,
+  useWatchHistory,
   MovieCard,
   MovieCardSkeleton,
   useVisiblePosters,
   type CatalogGroup,
 } from '@/entities/movie'
 import { messages } from '@/shared/locales'
+import { focusCatalogSearch } from '@/shared/lib'
+import { CatalogStage } from './catalog-stage'
+import { useCatalogPreview } from '../model/catalog-preview'
 import { useMoviePool } from '../model/use-movie-pool'
 
 function navigate(event: KeyboardEvent<HTMLElement>) {
@@ -46,8 +50,11 @@ function navigate(event: KeyboardEvent<HTMLElement>) {
       adjacent?.querySelector<HTMLElement>('button')
     if (!adjacent && event.key === 'ArrowDown')
       target = document.querySelector<HTMLElement>('footer button')
-    if (!adjacent && event.key === 'ArrowUp')
-      target = document.querySelector<HTMLElement>('[data-catalog-search]')
+    if (!adjacent && event.key === 'ArrowUp') {
+      event.preventDefault()
+      focusCatalogSearch()
+      return
+    }
   } else return
   event.preventDefault()
   target?.focus({ preventScroll: true })
@@ -59,6 +66,7 @@ function navigate(event: KeyboardEvent<HTMLElement>) {
 }
 function MovieShelf({ group }: { group: CatalogGroup }) {
   const { state, retry } = useMoviePool(group)
+  const preview = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
   const title = messages.catalog[group]
   useEffect(() => {
@@ -122,10 +130,11 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
                 <li
                   key={movie.id}
                   data-poster-id={movie.id}
-                  className="w-[clamp(144px,15vw,240px)] shrink-0"
+                  className="w-[clamp(112px,16svh,200px)] shrink-0"
                 >
                   <MovieCard
                     movie={movie}
+                    onFocus={() => preview(movie)}
                     showPoster={visible.has(movie.id)}
                     href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=${group}`}
                   />
@@ -134,7 +143,7 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
             : Array.from({ length: 6 }, (_, index) => (
                 <li
                   key={index}
-                  className="w-[clamp(144px,15vw,240px)] shrink-0"
+                  className="w-[clamp(112px,16svh,200px)] shrink-0"
                 >
                   <MovieCardSkeleton />
                 </li>
@@ -144,7 +153,72 @@ function MovieShelf({ group }: { group: CatalogGroup }) {
     </section>
   )
 }
-export function MovieCatalog() {
+function HistoryShelf() {
+  const items = useWatchHistory()
+  const preview = useCatalogPreview()
+  const { listRef, visible } = useVisiblePosters(items.length > 0)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const bookmark = window.history.state?.catalogFocus
+    if ((params.get('shelf') ?? bookmark?.group) !== 'history') return
+    const id = params.get('focus') ?? bookmark?.id
+    if (
+      !id ||
+      !/^\d{1,12}$/.test(id) ||
+      document.activeElement?.closest('[data-sidebar], [role=search]')
+    )
+      return
+    const card = listRef.current?.querySelector<HTMLElement>(
+      `[data-movie-id="${id}"]`,
+    )
+    card?.focus({ preventScroll: true })
+    card?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [items, listRef])
+  if (!items.length) return null
+  const m = messages.history
+  return (
+    <section
+      data-movie-shelf
+      data-movie-group="history"
+      aria-labelledby="watch-history-title"
+      className="min-w-0"
+    >
+      <Title id="watch-history-title" order={2} size="h3" mb="lg" fw={650}>
+        {m.title}
+      </Title>
+      <ul
+        ref={listRef}
+        onKeyDown={navigate}
+        aria-label={m.title}
+        className="m-0 flex list-none gap-6 overflow-x-auto p-4 pb-5 [&_[data-movie-card]]:scroll-my-4"
+      >
+        {items.map((item) => (
+          <li
+            key={item.id}
+            data-poster-id={item.id}
+            className="w-[clamp(112px,16svh,200px)] shrink-0"
+          >
+            <MovieCard
+              movie={item}
+              onFocus={() => preview(item)}
+              showPoster={visible.has(item.id)}
+              href={`/movie/?id=${item.id}&slug=${encodeURIComponent(item.slug)}&from=history`}
+            />
+            <Text size="sm" mt="xs">
+              {item.kind === 'series'
+                ? `${messages.player.season} ${item.season} · ${messages.player.episode} ${item.episode} · `
+                : ''}
+              {item.completed
+                ? m.completed
+                : `${Math.floor(item.time / 3600) ? `${Math.floor(item.time / 3600)}:` : ''}${String(Math.floor(item.time / 60) % 60).padStart(2, '0')}:${String(Math.floor(item.time) % 60).padStart(2, '0')}`}
+            </Text>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+function CatalogShelves() {
   const lastCard = useRef<HTMLElement | null>(null)
   function rememberFocus(event: FocusEvent<HTMLDivElement>) {
     const card = (event.target as HTMLElement).closest<HTMLElement>(
@@ -177,9 +251,18 @@ export function MovieCatalog() {
       aria-label={messages.catalog.label}
       className="flex min-w-0 flex-col gap-12"
     >
+      <HistoryShelf />
       {catalogGroups.map((group) => (
         <MovieShelf key={group} group={group} />
       ))}
     </div>
+  )
+}
+
+export function MovieCatalog() {
+  return (
+    <CatalogStage>
+      <CatalogShelves />
+    </CatalogStage>
   )
 }

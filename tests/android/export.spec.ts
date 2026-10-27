@@ -72,8 +72,25 @@ test('standalone export uses cancellable native messages without any API network
     const data = pool(group)
     if (url.searchParams.get('q') === 'Медленный')
       await new Promise((resolve) => setTimeout(resolve, 1000))
-    const body =
-      url.pathname === '/v1/catalog/search'
+    const body = url.pathname.startsWith('/v1/movies/')
+      ? {
+          id: url.pathname.split('/')[3],
+          slug: url.pathname.split('/')[4],
+          title: 'Название фильма',
+          kind: 'movie',
+          year: 2026,
+          rating: 8.2,
+          poster: null,
+          backdrop: null,
+          description: 'Описание с Android',
+          originalTitle: null,
+          duration: null,
+          genres: [],
+          countries: [],
+          directors: [],
+          actors: [],
+        }
+      : url.pathname === '/v1/catalog/search'
         ? {
             query: url.searchParams.get('q'),
             items: data.items.map((item) => ({ ...item, poster: null })),
@@ -87,10 +104,17 @@ test('standalone export uses cancellable native messages without any API network
   })
   await page.goto(origin)
   await expect(page.locator('[data-movie-card]')).toHaveCount(60)
-  expect(paths).toHaveLength(3)
+  expect(
+    paths.filter((path) => path.startsWith('/v1/catalog/pools/')),
+  ).toHaveLength(3)
+  await page.locator('[data-movie-card]').first().focus()
+  await expect(page.locator('[data-catalog-preview]')).toContainText(
+    'Описание с Android',
+  )
   await expect(
     page.getByRole('button', { name: 'Подключение', exact: true }),
   ).toHaveCount(0)
+  await page.goto(`${origin}/search/`)
   await page.getByRole('searchbox').fill('Люпен')
   await page.getByRole('searchbox').press('Enter')
   await expect(
@@ -114,5 +138,13 @@ test('standalone export uses cancellable native messages without any API network
   await expect(
     page.locator('[data-search-results] [data-movie-card]'),
   ).toHaveCount(20)
+  await page.goto(`${origin}/series/`)
+  await expect(
+    page.locator('[data-series-catalog] [data-movie-card]'),
+  ).toHaveCount(20)
+  expect(paths).toContain('/v1/catalog/pools/series')
+  await expect(
+    page.getByRole('heading', { name: 'Сериалы', exact: true }),
+  ).toBeVisible()
   expect(apiRequests).toEqual([])
 })

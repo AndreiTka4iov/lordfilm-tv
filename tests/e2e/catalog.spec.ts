@@ -100,7 +100,7 @@ test('poster failure keeps title and card geometry', async ({ page }) => {
   await page.route('https://image.tmdb.org/**', (route) => route.abort())
   await page.goto('/')
   const card = page.locator('[data-movie-card]').first()
-  await expect(card).toContainText('popular фильм 1')
+  await expect(card).toHaveAttribute('aria-label', 'popular фильм 1')
   await expect(card.locator('img')).toHaveCount(0)
   expect((await card.boundingBox())?.height).toBeGreaterThan(250)
 })
@@ -125,7 +125,7 @@ test('leaving the home page aborts outstanding requests', async ({ page }) => {
   await expect(page.locator('[data-movie-shelf]')).toHaveCount(0)
 })
 
-test('remote focus scales cards without shifting or clipping their neighbours', async ({
+test('remote focus enlarges vertical cards without scrolling after focus', async ({
   page,
 }) => {
   await page.goto('/')
@@ -135,12 +135,27 @@ test('remote focus scales cards without shifting or clipping their neighbours', 
   await expect(first).toBeVisible()
   const initial = await first.boundingBox()
   const neighbour = await next.boundingBox()
-  await page.getByRole('searchbox').focus()
+  await page.getByRole('main').focus()
   await page.keyboard.press('ArrowDown')
   await expect(first).toBeFocused()
+  const scrollFrames = await page.evaluate(async () => {
+    const positions: number[] = []
+    for (let i = 0; i < 24; i++) {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+      positions.push(window.scrollY)
+    }
+    return positions
+  })
+  expect(
+    Math.max(...scrollFrames) - Math.min(...scrollFrames),
+  ).toBeLessThanOrEqual(1)
   await expect
     .poll(async () => (await first.boundingBox())?.width ?? 0)
-    .toBeGreaterThan((initial?.width ?? 0) * 1.035)
+    .toBeCloseTo((initial?.width ?? 0) * 1.04, 1)
+  const cover = await first.locator('div').first().boundingBox()
+  expect((cover?.width ?? 0) / (cover?.height ?? 1)).toBeCloseTo(2 / 3, 2)
   expect((await next.boundingBox())?.width).toBeCloseTo(
     neighbour?.width ?? 0,
     1,
@@ -158,7 +173,7 @@ test('remote focus scales cards without shifting or clipping their neighbours', 
   await expect(last).toBeFocused()
   await expect
     .poll(async () => (await last.boundingBox())?.width ?? 0)
-    .toBeGreaterThan((initial?.width ?? 0) * 1.035)
+    .toBeCloseTo((initial?.width ?? 0) * 1.04, 1)
   const end = await last.boundingBox()
   if (!end) throw new Error('Missing last card bounds')
   expect(end.x + end.width + 6).toBeLessThanOrEqual(

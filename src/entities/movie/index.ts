@@ -7,7 +7,13 @@ export { getMovieDetail } from './api/get-movie-detail'
 export { MovieRequestError } from './api/request'
 export type { MovieDetail } from './model/detail'
 export { getPlayback } from './api/get-playback'
-export type { Playback } from './model/playback'
+export type { Playback, EpisodeSelection } from './model/playback'
 export { useVisiblePosters } from './model/use-visible-posters'
 export { searchMovies } from './api/search-movies'
 export type { SearchResults } from './api/search-movies'
+export {
+  readWatchHistory,
+  saveWatchProgress,
+  useWatchHistory,
+} from './model/watch-history'
+export type { WatchProgress } from './model/watch-history'

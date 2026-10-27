@@ -18,7 +18,12 @@ import {
   IconVolume,
   IconVolumeOff,
 } from '@tabler/icons-react'
-import type { Playback } from '@/entities/movie'
+import {
+  readWatchHistory,
+  type MoviePreview,
+  type Playback,
+} from '@/entities/movie'
+import { useWatchProgress } from '../model/use-watch-progress'
 import { messages } from '@/shared/locales'
 import { usePlayback } from '../model/use-playback'
 import { useVideoEngine } from '../model/use-video-engine'
@@ -30,18 +35,21 @@ function clock(value: number) {
 }
 function VideoScreen({
   source,
+  movie,
   title,
   onClose,
   retry,
   select,
 }: {
   source: Playback
+  movie: MoviePreview
   title: string
   onClose: () => void
   retry: () => void
   select: (season?: number, episode?: number) => void
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const startTime = useWatchProgress(movie, source, videoRef)
   const {
     playing,
     buffering,
@@ -58,7 +66,7 @@ function VideoScreen({
     setLevel,
     setTrack,
     toggleMute,
-  } = useVideoEngine(source, videoRef)
+  } = useVideoEngine(source, videoRef, startTime)
   const root = useRef<HTMLDivElement>(null)
   const playButton = useRef<HTMLButtonElement>(null)
   const [controls, setControls] = useState(true)
@@ -382,17 +390,28 @@ export function VideoPlayer({
   slug,
   title,
   onClose,
+  initialSelection,
+  movie,
 }: {
   id: string
   slug: string
   title: string
   onClose: () => void
+  movie: MoviePreview
+  initialSelection?: { season: number; episode: number }
 }) {
   useEffect(() => {
     window.addEventListener('lordfilm:pause', onClose)
     return () => window.removeEventListener('lordfilm:pause', onClose)
   }, [onClose])
-  const { state, select, retry } = usePlayback(id, slug)
+  const [openingSelection] = useState(() => {
+    if (initialSelection) return initialSelection
+    const saved = readWatchHistory().find((item) => item.id === id)
+    return saved?.kind === 'series' && saved.season && saved.episode
+      ? { season: saved.season, episode: saved.episode }
+      : undefined
+  })
+  const { state, select, retry } = usePlayback(id, slug, openingSelection)
   const m = messages.player
   const statusRoot = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -416,7 +435,8 @@ export function VideoPlayer({
     >
       {state.status === 'ready' ? (
         <VideoScreen
-          key={state.source.src}
+          key={`${state.source.season}:${state.source.episode}:${state.source.src}`}
+          movie={movie}
           source={state.source}
           title={title}
           onClose={onClose}

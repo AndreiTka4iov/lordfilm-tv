@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 test('header search opens the query and keeps the brand on the right', async ({
   page,
 }) => {
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/search/', { waitUntil: 'networkidle' })
   const search = page.getByRole('searchbox', {
     name: 'Поиск фильмов и сериалов',
   })
@@ -41,7 +41,7 @@ test('voice input gives a useful fallback when the browser does not support it',
       configurable: true,
     })
   })
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/search/', { waitUntil: 'networkidle' })
   await page
     .getByRole('button', { name: 'Голосовой поиск', exact: true })
     .click()
@@ -79,7 +79,7 @@ test('a recognised voice query fills the search field', async ({ page }) => {
       configurable: true,
     })
   })
-  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.goto('/search/', { waitUntil: 'networkidle' })
   await page
     .getByRole('button', { name: 'Голосовой поиск', exact: true })
     .click()

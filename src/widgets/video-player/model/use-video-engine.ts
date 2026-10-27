@@ -7,6 +7,7 @@ import type { Playback } from '@/entities/movie'
 export function useVideoEngine(
   source: Playback,
   videoRef: RefObject<HTMLVideoElement | null>,
+  startTime = 0,
 ) {
   const hlsRef = useRef<Hls | null>(null)
   const [playing, setPlaying] = useState(false)
@@ -24,6 +25,14 @@ export function useVideoEngine(
     if (!video) return
     let active = true
     let lastUpdate = 0
+    let restored = false
+    const restore = () => {
+      if (restored || !Number.isFinite(video.duration) || video.duration <= 0)
+        return
+      restored = true
+      if (startTime > 0)
+        video.currentTime = Math.min(startTime, Math.max(0, video.duration - 1))
+    }
     const fail = () => {
       if (!active) return
       setError(true)
@@ -68,6 +77,8 @@ export function useVideoEngine(
       if (active)
         setDuration(Number.isFinite(video.duration) ? video.duration : 0)
     }
+    video.addEventListener('loadedmetadata', restore)
+    video.addEventListener('durationchange', restore)
     video.addEventListener('playing', onPlay)
     video.addEventListener('pause', onPause)
     video.addEventListener('waiting', onWait)
@@ -86,6 +97,7 @@ export function useVideoEngine(
             ))
         ) {
           const hls = new Engine({
+            startPosition: startTime > 0 ? startTime : -1,
             ...(source.cdnTime !== null
               ? { loader: cdnLoader(Engine, source.cdnTime) }
               : {}),
@@ -167,6 +179,8 @@ export function useVideoEngine(
       .catch(fail)
     return () => {
       active = false
+      video.removeEventListener('loadedmetadata', restore)
+      video.removeEventListener('durationchange', restore)
       video.removeEventListener('playing', onPlay)
       video.removeEventListener('pause', onPause)
       video.removeEventListener('waiting', onWait)
@@ -179,7 +193,7 @@ export function useVideoEngine(
       video.removeAttribute('src')
       video.load()
     }
-  }, [source, videoRef])
+  }, [source, videoRef, startTime])
   function togglePlay() {
     const video = videoRef.current
     if (!video) return

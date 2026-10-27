@@ -2,7 +2,12 @@
 import type { ReactNode, KeyboardEvent } from 'react'
 import { Container } from '@mantine/core'
 import { ToggleColorScheme } from '@/features/toggle-color-scheme'
-import { contentFocusTarget, focusSidebar } from '@/shared/lib'
+import {
+  contentFocusTarget,
+  focusSidebar,
+  focusCatalogSearch,
+  scrollFocusedBlock,
+} from '@/shared/lib'
 import { messages } from '@/shared/locales'
 export function AppShell({
   children,
@@ -33,9 +38,7 @@ export function AppShell({
     }
     if (event.key === 'ArrowUp' && event.target === event.currentTarget) {
       event.preventDefault()
-      document
-        .querySelector<HTMLInputElement>('[data-catalog-search]')
-        ?.focus({ preventScroll: true })
+      focusCatalogSearch()
       return
     }
     if (event.key !== 'ArrowLeft' || event.target !== event.currentTarget)
@@ -73,6 +76,15 @@ export function AppShell({
           tabIndex={-1}
           aria-label={messages.navigation.content}
           onKeyDown={returnToMenu}
+          onFocusCapture={(event) => {
+            const main = event.currentTarget
+            const target = event.target as HTMLElement
+            if (target === main || !main.contains(target)) return
+            window.requestAnimationFrame(() => {
+              if (target === document.activeElement && main.contains(target))
+                scrollFocusedBlock(target)
+            })
+          }}
           className="py-6 outline-none md:py-8"
         >
           {children}

@@ -19,6 +19,13 @@ export function contentFocusTarget(): HTMLElement | null {
     document.querySelector<HTMLElement>('[data-watch-button]') ??
     document.querySelector<HTMLElement>('[data-movie-detail] a') ??
     document.querySelector<HTMLElement>(
+      '[data-series-catalog] [data-catalog-focus]',
+    ) ??
+    document.querySelector<HTMLElement>(
+      '[data-series-catalog] [data-movie-card]',
+    ) ??
+    document.querySelector<HTMLElement>('[data-series-action]') ??
+    document.querySelector<HTMLElement>(
       '[data-search-results] [data-catalog-focus]',
     ) ??
     document.querySelector<HTMLElement>(

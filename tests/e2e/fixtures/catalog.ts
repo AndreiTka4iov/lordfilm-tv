@@ -16,6 +16,28 @@ export function pool(group: string) {
   }
 }
 export async function mockCatalog(page: Page) {
+  await page.route('**/v1/movies/*/*', (route) => {
+    const path = new URL(route.request().url()).pathname.split('/')
+    return route.fulfill({
+      json: {
+        id: path[3],
+        slug: path[4],
+        title: 'Название фильма',
+        kind: 'movie',
+        year: 2026,
+        rating: 8.2,
+        poster: null,
+        backdrop: 'https://image.tmdb.org/t/p/w1280/backdrop.jpg',
+        description: `Описание фильма ${path[3]}`,
+        originalTitle: null,
+        duration: null,
+        genres: [],
+        countries: [],
+        directors: [],
+        actors: [],
+      },
+    })
+  })
   await page.route('**/v1/catalog/pools/*', (route) =>
     route.fulfill({
       json: pool(

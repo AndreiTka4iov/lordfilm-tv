@@ -1,15 +1,23 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getPlayback, type Playback } from '@/entities/movie'
+import {
+  getPlayback,
+  type Playback,
+  type EpisodeSelection,
+} from '@/entities/movie'
 type State =
   { status: 'loading' | 'error' } | { status: 'ready'; source: Playback }
-export function usePlayback(id: string, slug: string) {
+export function usePlayback(
+  id: string,
+  slug: string,
+  initialSelection?: EpisodeSelection,
+) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [selection, setSelection] = useState<{
     season?: number
     episode?: number
     attempt: number
-  }>({ attempt: 0 })
+  }>(() => ({ ...initialSelection, attempt: 0 }))
   useEffect(() => {
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), 25_000)

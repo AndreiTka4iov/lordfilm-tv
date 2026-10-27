@@ -40,9 +40,7 @@ test('OK opens movie details and Back restores the selected card', async ({
   await expect(page.getByText(movie.description).first()).toBeVisible()
   await expect(page.locator('[data-movie-card]')).toHaveCount(0)
   await expect(page.locator('[data-movie-detail] img')).toHaveCount(1)
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeFocused()
+  await expect(page.locator('[data-watch-button]')).toBeFocused()
   await page.keyboard.press('ArrowDown')
   await expect(page.locator('[data-detail-copy]')).toBeFocused()
   await page.keyboard.press('Escape')
@@ -80,12 +78,8 @@ test('direct series page and reload work on a small TV viewport', async ({
     'Название сериала',
   )
   await expect(page.getByText('Сериал', { exact: true })).toBeVisible()
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeFocused()
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeInViewport()
+  await expect(page.locator('[data-watch-button]')).toBeFocused()
+  await expect(page.locator('[data-watch-button]')).toBeInViewport()
   await page.reload()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Название сериала',
@@ -128,7 +122,7 @@ test('watch has initial focus and remote arrows reach details and back', async (
   page,
 }) => {
   await page.goto('/movie/?id=1&slug=movie-1')
-  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  const watch = page.locator('[data-watch-button]')
   await expect(watch).toBeFocused()
   await expect(page.locator('[data-movie-artwork]')).toHaveAttribute(
     'src',
@@ -156,7 +150,7 @@ test('detail remote opens sidebar and restores the exact content focus', async (
   page,
 }) => {
   await page.goto('/movie/?id=1&slug=movie-1')
-  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  const watch = page.locator('[data-watch-button]')
   const menu = page.getByRole('complementary', { name: 'Главное меню' })
   const home = menu.getByRole('link', { name: 'Главная', exact: true })
   await expect(watch).toBeFocused()
@@ -186,9 +180,8 @@ test('detail remote opens sidebar and restores the exact content focus', async (
     page.getByRole('link', { name: 'Назад к каталогу' }),
   ).toBeFocused()
   await page.keyboard.press('ArrowUp')
-  await expect(page.getByRole('searchbox')).toBeFocused()
-  await page.getByRole('searchbox').fill('')
-  await page.keyboard.press('ArrowLeft')
+  await expect(page.locator('[data-sidebar] a[href="/search/"]')).toBeFocused()
+  await page.keyboard.press('ArrowDown')
   await expect(home).toBeFocused()
 })
 
@@ -202,7 +195,7 @@ test('description scrolls with remote and returns up to watch without a trap', a
     }),
   )
   await page.goto('/movie/?id=1&slug=movie-1')
-  const watch = page.getByRole('button', { name: 'Смотреть', exact: true })
+  const watch = page.locator('[data-watch-button]')
   await expect(watch).toBeFocused()
   await page.keyboard.press('ArrowDown')
   const copy = page.locator('[data-detail-copy]')
@@ -233,15 +226,11 @@ test('late detail response does not steal focus from the sidebar', async ({
   await expect(
     menu.getByRole('link', { name: 'Главная', exact: true }),
   ).toBeFocused()
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeAttached()
+  await expect(page.locator('[data-watch-button]')).toBeAttached()
   await expect(menu).toHaveAttribute('data-expanded', 'true')
   await expect(
     menu.getByRole('link', { name: 'Главная', exact: true }),
   ).toBeFocused()
   await page.keyboard.press('ArrowRight')
-  await expect(
-    page.getByRole('button', { name: 'Смотреть', exact: true }),
-  ).toBeFocused()
+  await expect(page.locator('[data-watch-button]')).toBeFocused()
 })

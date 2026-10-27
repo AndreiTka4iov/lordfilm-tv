@@ -11,7 +11,7 @@ test('main search submits real API query and D-pad navigates the grid and sideba
   page.on('request', (r) => {
     if (r.url().includes('/catalog/search?')) calls.push(r.url())
   })
-  await page.goto('/')
+  await page.goto('/search/')
   const input = page.getByRole('searchbox')
   await input.fill(' Люпен ')
   expect(calls.length).toBe(0)
@@ -130,8 +130,9 @@ test('changing query aborts stale results and images remain bounded', async ({
   await input.fill('fast')
   await input.press('Enter')
   await expect(page.locator('[data-movie-card]')).toHaveCount(20)
-  await expect(page.locator('[data-movie-card]').first()).toContainText(
-    'fast фильм',
+  await expect(page.locator('[data-movie-card]').first()).toHaveAttribute(
+    'aria-label',
+    /fast фильм/,
   )
   await expect.poll(() => failures.length).toBeGreaterThan(0)
   expect(await page.locator('[data-movie-poster]').count()).toBeLessThan(20)

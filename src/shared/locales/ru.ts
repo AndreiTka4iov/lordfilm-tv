@@ -1,4 +1,9 @@
 export const ru = {
+  history: {
+    title: 'Продолжить просмотр',
+    resume: 'Продолжить просмотр',
+    completed: 'Просмотрено',
+  },
   player: {
     title: 'Видеоплеер',
     screen: 'Видео',
@@ -24,6 +29,7 @@ export const ru = {
   movie: {
     back: 'Назад к каталогу',
     backSearch: 'Назад к поиску',
+    backSeries: 'Назад к сериалам',
     watch: 'Смотреть',
     loading: 'Загружаем фильм…',
     film: 'Фильм',
@@ -39,7 +45,27 @@ export const ru = {
     error: 'Не удалось загрузить фильм',
     errorDescription: 'Проверьте подключение и попробуйте ещё раз.',
   },
+  seriesDetail: {
+    title: 'Сезоны и серии',
+    seasons: 'Выбор сезона',
+    episodes: 'Серии сезона',
+    season: 'Сезон',
+    episode: 'Серия',
+    loading: 'Загружаем список серий…',
+    error: 'Не удалось загрузить серии',
+    errorDescription: 'Проверьте подключение или попробуйте ещё раз позже.',
+    empty: 'В этом сезоне пока нет доступных серий.',
+    play: 'Смотреть серию',
+  },
+  seriesCatalog: {
+    list: 'Каталог сериалов',
+    selection: 'В подборке',
+    loading: 'Загружаем сериалы…',
+    error: 'Не удалось загрузить сериалы. Попробуйте ещё раз.',
+  },
   catalog: {
+    previewLoading: 'Загружаем описание…',
+    previewUnavailable: 'Описание недоступно',
     popular: 'Популярные фильмы',
     new: 'Новинки',
     series: 'Сериалы',

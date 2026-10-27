@@ -3,8 +3,8 @@ import { mockCatalog, mockSearch } from './fixtures/catalog'
 test.beforeEach(async ({ page }) => {
   await mockCatalog(page)
   await mockSearch(page)
-  await page.goto('/')
-  await expect(page.locator('[data-movie-card]')).toHaveCount(60)
+  await page.goto('/search/')
+  await expect(page.getByRole('searchbox')).toBeVisible()
   await page.clock.install({ time: new Date('2026-10-25T09:00:00Z') })
   await page.clock.pauseAt(new Date('2026-10-25T10:00:00Z'))
 })
@@ -86,7 +86,7 @@ test('short input and leaving the page cancel delayed search', async ({
   await expect(page).toHaveURL(/\/movies\/$/)
   await page.clock.runFor(1000)
   expect(queries).toEqual([])
-  await expect(input).toHaveValue('')
+  await expect(input).toHaveCount(0)
 })
 test('IME composition waits until the text is committed', async ({ page }) => {
   const queries: string[] = []

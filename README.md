@@ -8,18 +8,18 @@ Browse movies and TV shows in a clean, cinema-inspired interface built for the c
 
 **[Download for Android TV](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk)** · [All releases](https://github.com/AndreiTka4iov/lordfilm-tv/releases) · [Report a bug](https://github.com/AndreiTka4iov/lordfilm-tv/issues)
 
-![LordFilm TV home screen with movie collections, search, and a compact sidebar](docs/assets/home-screen.png)
+![LordFilm TV home screen with focused movie artwork, details, and vertical posters](docs/assets/home-screen.png)
 
 ## Made for movie nights
 
-| Feature                     | What you get                                                                                              |
-| --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Discover something to watch | Browse popular movies, new releases, and TV shows with large posters and dedicated detail pages.          |
-| Stay on the remote          | Move with the arrows, select with OK, and return with Back. The sidebar expands when you focus it.        |
-| Find your next watch        | Search by title or actor. Results update as you type. Voice input is available where supported.           |
-| Settle into a series        | Choose a season and episode, switch audio tracks or quality when available, and move to the next episode. |
-| Make it yours               | Choose a light or dark theme, with clear focus states and smooth card transitions.                        |
-| Run it your way             | Install the standalone Android APK, or self-host the web client with its separate API.                    |
+| Feature                     | What you get                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Discover something to watch | Browse bottom card lists with artwork, rating, and description of the focused title above them.                    |
+| Stay on the remote          | Move with the arrows, select with OK, and return with Back. The sidebar expands when you focus it.                 |
+| Find your next watch        | Search by title or actor on the Search page. Results update as you type. Voice input is available where supported. |
+| Settle into a series        | Choose a season and episode, switch audio tracks or quality when available, and move to the next episode.          |
+| Make it yours               | Choose a light or dark theme, with clear focus states and smooth card transitions.                                 |
+| Run it your way             | Install the standalone Android APK, or self-host the web client with its separate API.                             |
 
 The interface is currently in **Russian**. This is an independent community project built around public LordFilm sources.
 
@@ -50,7 +50,7 @@ It needs a compatible WebView engine. Devices with an older engine receive an up
 
 **What is ready today?**
 
-Home collections, search, movie and series details, and HLS playback. The project is in active development: other menu sections are placeholders, and accounts and automatic playback restoration are not implemented. Catalog, artwork, and video availability depend on external sources and your network.
+Home collections, search, movie and series details, and HLS playback. The project is in active development: the Series section shows a 20-title grid; remaining menu sections are placeholders, and accounts are not implemented. Catalog, artwork, and video availability depend on external sources and your network.
 
 ## Help shape the next version
 
@@ -145,6 +145,8 @@ cd android
 ./gradlew -PlordfilmOrigin=https://your-source.example verifyDebugWebAssets
 ```
 
+Series detail pages include a season selector and episode grid before the full description. Episode metadata is loaded through the existing playback contract without starting video. Choosing an episode opens the player at that season and episode; closing it restores focus to the episode button. Arrow keys connect the season row, episode grid, sidebar, Watch action and description. Failed requests can be retried, and changing seasons cancels the previous request. No episode artwork or video streams are preloaded.
+
 The shell loads only packaged pages through WebViewAssetLoader at the HTTPS origin `https://appassets.androidplatform.net`. React sends paths from the existing contract (`/v1/…`) through an asynchronous WebMessage bridge restricted to that origin. Kotlin returns the same DTOs. These are in-process messages, not network API requests. The web app continues to use a separate HTTP API.
 
 Bridge protocol: request `{id, path}`, response `{id, status, body}`, cancellation `{cancel: id}`. Only known catalog operations are accepted; arbitrary URLs are rejected. Android runs two network jobs with a queue of up to six; excess requests receive 503. Responses are limited to 128 KiB, source HTML to 4 MiB, and provider HTML to 2 MiB. Each HTTP call has a 10-second timeout. Requests are cancelled when the screen or search query changes. Native connections and jobs are closed when the Activity is destroyed. Catalog data and search results are not cached on disk.
@@ -218,3 +220,5 @@ Browser tests start the frontend on port 3100 and replace external APIs and medi
 Before opening a PR, run the checks above and describe the behavior change and how you verified it. For bug reports, include reproduction steps and browser/WebView and device versions. Remove private data from logs. GitHub Actions checks the code, browser scenarios, both web builds, Compose configurations, and Docker images. A separate Android job checks Kotlin, native tests, Lint, and APK packaging; its debug APK is available in the workflow artifacts.
 
 </details>
+
+Watch progress is stored locally on each device (browser local storage, including the Android WebView). The home screen shows the 20 most recently watched films and series. Playback restores the last season, episode and exact position; selecting a different episode starts it from the beginning. Progress is saved periodically and on pause, seeking, closing, or leaving the app. Completed films restart from the beginning. Clearing app/browser data removes this history; it is not synced between devices.
