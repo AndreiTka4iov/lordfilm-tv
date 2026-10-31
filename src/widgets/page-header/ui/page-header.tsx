@@ -7,7 +7,7 @@ export function PageHeader() {
   const pathname = usePathname()
   if (pathname !== '/search' && pathname !== '/search/') return null
   return (
-    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-5 py-8">
+    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-5 pt-4 pb-2">
       <div className="flex min-w-0 max-w-3xl">
         <CatalogSearch />
       </div>

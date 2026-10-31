@@ -13,10 +13,16 @@ import {
   focusCatalogSearch as focusSearch,
   navigateMovieGrid,
 } from '@/shared/lib'
+import {
+  CatalogStage,
+  useCatalogPreview,
+  catalogFocusKey,
+} from '@/widgets/movie-catalog'
 import { messages } from '@/shared/locales'
 import { useMovieSearch } from '../model/use-movie-search'
 function Results({ query }: { query: string }) {
   const { state, retry } = useMovieSearch(query)
+  const { select, focusedKey } = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
   useEffect(() => {
     if (state.status !== 'ready') return
@@ -108,20 +114,28 @@ function Results({ query }: { query: string }) {
               window.location.href,
             )
         }}
-        className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,144px),1fr))] lg:grid-cols-[repeat(auto-fill,minmax(min(100%,170px),1fr))] gap-x-6 gap-y-10 p-4"
+        className={`m-0 flex flex-nowrap list-none gap-5 overflow-x-auto overscroll-x-contain py-5 pr-5 ${focusedKey ? 'pl-5' : 'pl-0'} [scrollbar-width:none]`}
       >
         {state.status === 'ready'
           ? state.result.items.map((movie) => (
-              <li key={movie.id} data-poster-id={movie.id}>
+              <li
+                key={movie.id}
+                data-poster-id={movie.id}
+                className="w-[clamp(112px,16svh,200px)] shrink-0"
+              >
                 <MovieCard
                   movie={movie}
+                  onFocus={() =>
+                    select(movie, catalogFocusKey('search', movie))
+                  }
+                  focused={focusedKey === catalogFocusKey('search', movie)}
                   showPoster={visible.has(movie.id)}
                   href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=search&q=${encodeURIComponent(query)}`}
                 />
               </li>
             ))
           : Array.from({ length: 12 }, (_, index) => (
-              <li key={index}>
+              <li key={index} className="w-[clamp(112px,16svh,200px)] shrink-0">
                 <MovieCardSkeleton />
               </li>
             ))}
@@ -167,16 +181,13 @@ function SearchContent() {
         }
       }}
     >
-      <Title order={1} size="h2" mb="lg">
+      <Title order={1} className="sr-only">
         {messages.navigation.search}
       </Title>
       {valid ? (
-        <>
-          <Text c="dimmed" mb="xl">
-            {messages.search.resultsFor} «{query}»
-          </Text>
-          <Results key={query} query={query} />
-        </>
+        <CatalogStage key={query} withSearchHeader>
+          <Results query={query} />
+        </CatalogStage>
       ) : (
         <Text c="dimmed" role="status">
           {raw ? messages.search.tooShort : messages.search.intro}

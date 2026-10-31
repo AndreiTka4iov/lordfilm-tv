@@ -6,7 +6,7 @@ Browse movies and TV shows in a clean, cinema-inspired interface built for the c
 
 **Install one APK and open the catalog.** The Android app runs on your TV or streaming box without a companion computer or your own backend server.
 
-**[Download for Android TV](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk)** · [All releases](https://github.com/AndreiTka4iov/lordfilm-tv/releases) · [Report a bug](https://github.com/AndreiTka4iov/lordfilm-tv/issues)
+**[Download for Android TV](https://github.com/AndreiTka4iov/lordfilm-tv/releases/latest)** · [All releases](https://github.com/AndreiTka4iov/lordfilm-tv/releases) · [Report a bug](https://github.com/AndreiTka4iov/lordfilm-tv/issues)
 
 ![LordFilm TV home screen with focused movie artwork, details, and vertical posters](docs/assets/home-screen.png)
 
@@ -25,14 +25,14 @@ The interface is currently in **Russian**. This is an independent community proj
 
 ## Get it on your TV
 
-1. **[Download the APK](https://github.com/AndreiTka4iov/lordfilm-tv/releases/download/v0.2.0-preview.1/lordfilm-tv-0.2.0-preview.1.apk)** from GitHub Releases.
+1. **[Download the APK](https://github.com/AndreiTka4iov/lordfilm-tv/releases/latest)** from GitHub Releases.
 2. Transfer it to your Android TV device or streaming box.
 3. Open the APK with a file manager and allow installation from that app when prompted.
 4. Launch **LordFilm TV** and pick something to watch.
 
 **Requirements:** Android 7.0+ and Android System WebView/Chromium **111 or newer**, plus an internet connection. Check the WebView version as well as the Android version.
 
-The current download is **0.2.0 Preview 1**, signed with a test key and using package `tv.lordfilm.app.debug`. [Release notes and SHA-256 checksum](https://github.com/AndreiTka4iov/lordfilm-tv/releases/tag/v0.2.0-preview.1) are available with the APK.
+APK downloads, release notes, and checksums are available on the [releases page](https://github.com/AndreiTka4iov/lordfilm-tv/releases). Debug APKs use package `tv.lordfilm.app.debug`; files marked `unsigned` require signing before installation.
 
 ## A few things to know
 
@@ -50,7 +50,7 @@ It needs a compatible WebView engine. Devices with an older engine receive an up
 
 **What is ready today?**
 
-Home collections, search, movie and series details, and HLS playback. The project is in active development: the Series section shows a 20-title grid; remaining menu sections are placeholders, and accounts are not implemented. Catalog, artwork, and video availability depend on external sources and your network.
+Home collections, search, movie and series details, and HLS playback. The project is in active development: the Movies and Series sections each show a 20-title grid; remaining menu sections are placeholders, and accounts are not implemented. Catalog, artwork, and video availability depend on external sources and your network.
 
 ## Help shape the next version
 
@@ -171,14 +171,14 @@ Release output: `app/build/outputs/apk/release/app-release-unsigned.apk`. Sign i
 
 | Method | Path                              | Result                                                           |
 | ------ | --------------------------------- | ---------------------------------------------------------------- |
-| GET    | `/v1/catalog/pools/{group}`       | 20 titles; `group`: `popular`, `new`, `series`                   |
+| GET    | `/v1/catalog/pools/{group}`       | 20 titles; `group`: `popular`, `new`, `series`, `movies`         |
 | GET    | `/v1/catalog/search?q=…`          | Up to 40 titles; query length: 2–200 characters                  |
 | GET    | `/v1/movies/{id}/{slug}`          | Movie or TV show details                                         |
 | GET    | `/v1/movies/{id}/{slug}/playback` | Playback information; optional `season` and `episode` parameters |
 
 Contract: [OpenAPI](postman/specs/catalog.openapi.json). Postman requests, local mocks, and simulations are in `postman/`. A Postman account is not required to run the app or automated tests.
 
-The adapter reads data from public LordFilm pages without executing their scripts. `popular` uses `/top-100`, `new` uses `/catalog/category/{current UTC year}`, and `series` uses `/serialy`. Ordering comes from the source: New Releases accepts only films released in the current UTC year, preserving their source order. Missing or short year categories return an upstream error instead of filling the shelf with older films. Titles are unique within each collection but may appear in multiple collections. Search uses `/search` with `search_text_mode=full`. Pagination is not implemented; users are prompted to refine the query when the result limit is reached.
+The adapter reads data from public LordFilm pages without executing their scripts. `popular` uses `/top-100`, `new` uses `/catalog/category/{current UTC year}`, `series` uses `/serialy`, and the Movies page (`movies`) uses `/filmy`. Ordering comes from the source: New Releases accepts only films released in the current UTC year, preserving their source order. Missing or short year categories return an upstream error instead of filling the shelf with older films. Titles are unique within each collection but may appear in multiple collections. The Search page displays a single horizontal result row with the same focused-title preview as the catalog. Up returns to the search field, Left/Right move through results. Search uses `/search` with `search_text_mode=full`. Pagination is not implemented; users are prompted to refine the query when the result limit is reached.
 
 The web API caches collections on the server for five minutes and coalesces concurrent requests. Search and playback responses are not cached. Source failures return 502 and timeouts return 504; missing data is not replaced with fictional entries. HTML is limited to 4 MiB, and source requests have a 10-second timeout. CORS permits only the configured origin. There is no arbitrary URL proxy.
 
@@ -186,11 +186,13 @@ Playback uses the Collaps provider. Video is streamed directly from the CDN; the
 
 ## Memory and TV navigation
 
+The player remembers the manually selected voice by name for up to 20 series in localStorage. It restores that voice across episodes, seasons, and reloads even if track order changes. If the voice is absent, playback uses an available track without overwriting the saved choice. With storage unavailable, the choice lasts for the current app session.
+
 The client retains the current screen data (up to 60 home titles or 40 search results) and the 10 most recently used successful previews. Preview descriptions, artwork URLs, and loaded background image elements are kept in memory across client navigation; the least recently used preview is evicted. Failed and cancelled requests are not cached. Reloading clears this preview cache. Catalog data is not cached in localStorage or IndexedDB. Requests are cancelled when leaving a screen or changing the query, and stale responses are ignored. A shared IntersectionObserver unloads offscreen posters.
 
 The player and HLS.js load only after selecting Watch. Adaptive quality is capped at 720p by default. The target buffer is 10 seconds, the maximum is 20 seconds / 8 MiB, and the back buffer is zero. These are HLS settings, not a hard limit on browser memory. Closing the player destroys HLS, its worker, MediaSource, requests, and timers.
 
-Each catalog focuses its first card on a fresh visit and restores its last selection from session storage on return or reload. If a saved card is no longer available, the first available card is selected after loading. An active sidebar or search field keeps focus. Left from the content edge opens the menu; Right from the menu returns to the content. Catalog focus is tracked per shelf and movie, so brief intermediate blur events do not reset selection. The sidebar overlays content without changing its width. In the player, OK/Space toggles playback, Left/Right on the video seek by 10 seconds, Up opens the controls, and Back/Escape closes the player. Voice input starts only when the microphone button is selected.
+Each catalog focuses its first card on a fresh visit and restores its last selection from session storage on return or reload. If a saved card is no longer available, the first available card is selected after loading. An active sidebar or search field keeps focus. Left from the content edge opens the menu; Right from the menu returns to the content. Catalog focus is tracked per shelf and movie, so brief intermediate blur events do not reset selection. The content area reserves space for the sidebar in both its collapsed and expanded states, resizing smoothly with the menu. In the player, OK/Space toggles playback, Left/Right on the video seek by 10 seconds, Up opens the controls, and Back/Escape closes the player. Voice input starts only when the microphone button is selected.
 
 ## Development and contributions
 

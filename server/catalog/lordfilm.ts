@@ -223,6 +223,7 @@ export class LordFilmSource
       popular: '/top-100',
       new: `/catalog/category/${year}`,
       series: '/serialy',
+      movies: '/filmy',
     }
     return parsePool(
       await this.fetchHtml(paths[group]),

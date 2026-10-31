@@ -9,12 +9,21 @@ import {
   previewCacheKey,
 } from '../model/preview-cache'
 import { useCatalogFocus } from '../model/use-catalog-focus'
-import { catalogGroups } from '@/entities/movie'
 import { messages } from '@/shared/locales'
 import {
   CatalogPreviewContext,
   usePreviewDetail,
 } from '../model/catalog-preview'
+
+const listTitles: Record<string, string> = {
+  history: messages.history.title,
+  popular: messages.catalog.popular,
+  new: messages.catalog.new,
+  series: messages.catalog.series,
+  search: messages.search.results,
+  'series-catalog': messages.seriesCatalog.list,
+  'movies-catalog': messages.moviesCatalog.list,
+}
 
 function Artwork({
   src,
@@ -53,21 +62,19 @@ function Artwork({
   }, [src, cacheKey])
   return <div ref={root} className="h-full w-full" />
 }
-export function CatalogStage({ children }: { children: ReactNode }) {
+export function CatalogStage({
+  children,
+  withSearchHeader = false,
+}: {
+  children: ReactNode
+  withSearchHeader?: boolean
+}) {
   const { focused, select, release, stageRef } = useCatalogFocus()
   const selected = focused?.movie ?? null
   const focusedKey = focused?.key ?? null
   useFocusMotion(stageRef, focusedKey)
   const scope = focusedKey?.split(':')[0]
-  const group = catalogGroups.find((group) => group === scope)
-  const listTitle =
-    scope === 'history'
-      ? messages.history.title
-      : scope === 'series-catalog'
-        ? messages.seriesCatalog.list
-        : group
-          ? messages.catalog[group]
-          : null
+  const listTitle = scope ? (listTitles[scope] ?? null) : null
   const context = useMemo(() => ({ focusedKey, select }), [focusedKey, select])
   const { trayRef, contentRef, spacing } = useTraySpacing(selected !== null)
   const result = usePreviewDetail(selected)
@@ -84,7 +91,7 @@ export function CatalogStage({ children }: { children: ReactNode }) {
         onBlurCapture={(event) =>
           release(event.currentTarget, event.relatedTarget)
         }
-        className="relative isolate flex h-[calc(100svh-64px)] min-h-[400px] min-w-0 flex-col overflow-hidden rounded-2xl"
+        className={`relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl ${withSearchHeader ? 'h-[calc(100svh-96px)] min-h-0' : 'h-[calc(100svh-64px)] min-h-[400px]'}`}
       >
         {selected && (
           <>
@@ -110,7 +117,7 @@ export function CatalogStage({ children }: { children: ReactNode }) {
                 <Title
                   order={2}
                   lineClamp={2}
-                  className="h-[2.24em] text-[clamp(24px,2.8vw,52px)] leading-[1.12] text-balance"
+                  className={`h-[2.24em] text-[clamp(24px,2.8vw,52px)] leading-[1.12] text-balance ${withSearchHeader ? '[@media(max-height:700px)]:h-[1.12em] [@media(max-height:700px)]:line-clamp-1' : ''}`}
                 >
                   {selected.title}
                 </Title>
@@ -125,11 +132,11 @@ export function CatalogStage({ children }: { children: ReactNode }) {
                   )}
                 </Group>
                 <Text
-                  mt="md"
+                  mt={withSearchHeader ? 'xs' : 'md'}
                   size="lg"
                   lineClamp={3}
                   data-catalog-description
-                  className="h-[4.5em] max-w-[60ch] text-white/90 leading-normal [@media(max-height:700px)]:h-[3em] [@media(max-height:700px)]:line-clamp-2"
+                  className={`h-[4.5em] max-w-[60ch] text-white/90 leading-normal ${withSearchHeader ? '[@media(max-height:700px)]:h-[1.5em] [@media(max-height:700px)]:line-clamp-1 [@media(max-height:700px)]:text-sm' : '[@media(max-height:700px)]:h-[3em] [@media(max-height:700px)]:line-clamp-2'}`}
                 >
                   {detail
                     ? detail.description || messages.movie.noDescription
@@ -155,7 +162,7 @@ export function CatalogStage({ children }: { children: ReactNode }) {
         <div
           data-catalog-tray
           ref={trayRef}
-          className={`min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain px-5 sm:px-8 lg:px-12 [scrollbar-width:none] ${selected ? 'h-[calc(clamp(168px,24svh,300px)+40px)] shrink-0' : 'flex-1'}`}
+          className={`min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain ${withSearchHeader && !selected ? 'pr-5 sm:pr-8 lg:pr-12' : 'px-5 sm:px-8 lg:px-12'} [scrollbar-width:none] ${selected ? 'h-[calc(clamp(168px,24svh,300px)+40px)] shrink-0' : 'flex-1'}`}
         >
           <Box aria-hidden="true" h={spacing} />
           <div ref={contentRef}>{children}</div>

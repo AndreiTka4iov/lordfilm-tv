@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { mockCatalog } from './fixtures/catalog'
+
+test.beforeEach(async ({ page }) => mockCatalog(page))
 
 test('remote focus expands the menu, arrows navigate and content restores focus', async ({
   page,
@@ -14,39 +17,35 @@ test('remote focus expands the menu, arrows navigate and content restores focus'
   await page.keyboard.press('ArrowLeft')
   await expect(home).toBeFocused()
   await expect(menu).toHaveAttribute('data-expanded', 'true')
-  const frames = await main.evaluate(async (node) => {
-    const sizes: { x: number; width: number }[] = []
-    for (let i = 0; i < 16; i++) {
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => resolve()),
-      )
-      const bounds = node.getBoundingClientRect()
-      sizes.push({ x: bounds.x, width: bounds.width })
-    }
-    return sizes
-  })
-  for (const bounds of frames) {
-    expect(bounds.x).toBeCloseTo(before?.x ?? 0, 1)
-    expect(bounds.width).toBeCloseTo(before?.width ?? 0, 1)
-  }
-  const sidebar = await menu.boundingBox()
-  expect((sidebar?.x ?? 0) + (sidebar?.width ?? 0)).toBeGreaterThan(
-    before?.x ?? 0,
-  )
+  await expect
+    .poll(async () => (await main.boundingBox())?.x ?? 0)
+    .toBeGreaterThan(before?.x ?? 0)
+  await expect
+    .poll(async () => (await main.boundingBox())?.width ?? 0)
+    .toBeLessThan(before?.width ?? 0)
+  await expect
+    .poll(async () => {
+      const content = await main.boundingBox()
+      const sidebar = await menu.boundingBox()
+      return (content?.x ?? 0) - ((sidebar?.x ?? 0) + (sidebar?.width ?? 0))
+    })
+    .toBeGreaterThan(16)
   await page.keyboard.press('ArrowDown')
   await expect(movies).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/\/movies\/$/)
   await expect(main.getByRole('heading', { level: 1 })).toHaveText('Фильмы')
+  const firstMovie = main.locator('[data-movie-card]').first()
+  await expect(firstMovie).toBeVisible()
   await expect(movies).toHaveAttribute('aria-current', 'page')
   await expect(movies).toBeFocused()
   await page.keyboard.press('ArrowRight')
-  await expect(main).toBeFocused()
+  await expect(firstMovie).toBeFocused()
   await expect(menu).toHaveAttribute('data-expanded', 'false')
   await page.keyboard.press('ArrowLeft')
   await expect(movies).toBeFocused()
   await page.keyboard.press('Escape')
-  await expect(main).toBeFocused()
+  await expect(firstMovie).toBeFocused()
   await expect.poll(async () => (await main.boundingBox())?.x).toBe(before?.x)
   await expect
     .poll(async () => (await main.boundingBox())?.width)
@@ -82,3 +81,44 @@ test('all LordFilm menu items remain reachable on a small TV viewport', async ({
     ),
   ).toBe(true)
 })
+
+for (const width of [960, 1280, 1920]) {
+  test(`content fits the expanded menu and preserves grid focus at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: width === 960 ? 540 : 720 })
+    if (width === 1280) await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/series/')
+    const main = page.getByRole('main')
+    const menu = page.locator('[data-sidebar]')
+    const link = menu.locator('a[href="/series/"]')
+    const card = page.locator('[data-movie-card]').nth(9)
+    await card.focus()
+    const before = (await main.boundingBox())!
+    await link.focus()
+    await expect(menu).toHaveAttribute('data-expanded', 'true')
+    await expect
+      .poll(() => menu.evaluate((node) => node.getBoundingClientRect().width))
+      .toBe(264)
+    await expect
+      .poll(async () => (await main.boundingBox())?.width ?? 0)
+      .toBeLessThan(before.width)
+    const expanded = (await main.boundingBox())!
+    const sidebar = (await menu.boundingBox())!
+    expect(expanded.x).toBeGreaterThan(sidebar.x + sidebar.width + 16)
+    expect(expanded.x + expanded.width).toBeLessThanOrEqual(width)
+    await page.screenshot({
+      path: test.info().outputPath(`expanded-menu-${width}.png`),
+    })
+    await link.press('ArrowRight')
+    await expect(card).toBeFocused()
+    await expect(menu).toHaveAttribute('data-expanded', 'false')
+    await expect
+      .poll(async () => (await main.boundingBox())?.width)
+      .toBeCloseTo(before.width, 1)
+    await expect(card).toBeInViewport({ ratio: 0.99 })
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width)
+  })
+}

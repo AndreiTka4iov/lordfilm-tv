@@ -96,7 +96,7 @@ http
       )
       return
     }
-    const group = /^\/v1\/catalog\/pools\/(popular|new|series)$/.exec(
+    const group = /^\/v1\/catalog\/pools\/(popular|new|series|movies)$/.exec(
       request.url,
     )?.[1]
     if (request.method !== 'GET' || !group) {

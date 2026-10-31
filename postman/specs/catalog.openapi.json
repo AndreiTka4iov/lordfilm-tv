@@ -15,7 +15,7 @@
       "get": {
         "operationId": "getCatalogPool",
         "summary": "Return 20 distinct titles in source order",
-        "description": "popular: first 20 available films in LordFilm Top 100. new: first 20 distinct films from the current UTC release-year category; only that year is accepted, preserving source order. Missing or short categories return 502; no older-film fallback. series: first 20 entries of the series catalog. No authentication. No pagination or arbitrary source URLs.",
+        "description": "popular: first 20 available films in LordFilm Top 100. new: first 20 distinct films from the current UTC release-year category; only that year is accepted, preserving source order. Missing or short categories return 502; no older-film fallback. series: first 20 entries of the series catalog. movies: first 20 entries of the general film catalog, preserving source order. No authentication. No pagination or arbitrary source URLs.",
         "parameters": [
           {
             "name": "group",
@@ -23,7 +23,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": ["popular", "new", "series"]
+              "enum": ["popular", "new", "series", "movies"]
             }
           }
         ],
@@ -39,7 +39,7 @@
                   "properties": {
                     "group": {
                       "type": "string",
-                      "enum": ["popular", "new", "series"]
+                      "enum": ["popular", "new", "series", "movies"]
                     },
                     "generatedAt": {
                       "type": "string",

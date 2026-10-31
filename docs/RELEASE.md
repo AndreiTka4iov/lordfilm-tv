@@ -2,7 +2,7 @@
 
 [All releases and APK downloads](https://github.com/AndreiTka4iov/lordfilm-tv/releases)
 
-The package and Android app currently use version `0.3.0` (`versionCode = 3`). The published README download still points to Preview 1; update the link only after a new release exists.
+The package and Android app currently use version `0.3.1` (`versionCode = 4`). The README download link opens the latest published release; preparing a local version does not publish or replace that download.
 
 ## Validate locally
 

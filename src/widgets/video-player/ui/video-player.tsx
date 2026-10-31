@@ -66,7 +66,12 @@ function VideoScreen({
     setLevel,
     setTrack,
     toggleMute,
-  } = useVideoEngine(source, videoRef, startTime)
+  } = useVideoEngine(
+    source,
+    videoRef,
+    startTime,
+    source.kind === 'series' ? movie.id : undefined,
+  )
   const root = useRef<HTMLDivElement>(null)
   const playButton = useRef<HTMLButtonElement>(null)
   const [controls, setControls] = useState(true)

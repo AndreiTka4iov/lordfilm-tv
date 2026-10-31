@@ -384,12 +384,14 @@ function MovieFromQuery() {
   const returnHref =
     group === 'series-catalog' && /^\d{1,12}$/.test(id)
       ? `/series/?focus=${id}`
-      : group === 'search' && searchQuery.length >= 2
-        ? `/search/?q=${encodeURIComponent(searchQuery)}&focus=${encodeURIComponent(id)}`
-        : /^\d{1,12}$/.test(id) &&
-            ['popular', 'new', 'series', 'history'].includes(group ?? '')
-          ? `/?shelf=${group}&focus=${id}`
-          : '/'
+      : group === 'movies-catalog' && /^\d{1,12}$/.test(id)
+        ? `/movies/?focus=${id}`
+        : group === 'search' && searchQuery.length >= 2
+          ? `/search/?q=${encodeURIComponent(searchQuery)}&focus=${encodeURIComponent(id)}`
+          : /^\d{1,12}$/.test(id) &&
+              ['popular', 'new', 'series', 'history'].includes(group ?? '')
+            ? `/?shelf=${group}&focus=${id}`
+            : '/'
   if (!/^\d{1,12}$/.test(id) || !/^[a-zA-Z0-9_-]{1,200}$/.test(slug))
     return (
       <Stack>
@@ -408,9 +410,11 @@ function MovieFromQuery() {
       returnLabel={
         group === 'series-catalog'
           ? messages.movie.backSeries
-          : group === 'search'
-            ? messages.movie.backSearch
-            : messages.movie.back
+          : group === 'movies-catalog'
+            ? messages.movie.backMovies
+            : group === 'search'
+              ? messages.movie.backSearch
+              : messages.movie.back
       }
     />
   )

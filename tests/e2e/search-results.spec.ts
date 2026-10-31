@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await mockCatalog(page)
   await mockSearch(page)
 })
-test('main search submits real API query and D-pad navigates the grid and sidebar', async ({
+test('main search submits real API query and D-pad navigates the horizontal row and sidebar', async ({
   page,
 }) => {
   const calls: string[] = []
@@ -29,10 +29,10 @@ test('main search submits real API query and D-pad navigates the grid and sideba
   await page.keyboard.press('ArrowRight')
   await expect(cards.nth(1)).toBeFocused()
   await page.keyboard.press('ArrowDown')
-  expect(
-    await cards.nth(1).evaluate((node) => node === document.activeElement),
-  ).toBe(false)
+  await expect(cards.nth(1)).toBeFocused()
   await page.keyboard.press('ArrowUp')
+  await expect(input).toBeFocused()
+  await input.press('ArrowDown')
   await expect(cards.nth(1)).toBeFocused()
   await page.keyboard.press('ArrowLeft')
   await page.keyboard.press('ArrowLeft')

@@ -1,5 +1,5 @@
 export const catalogGroups = ['popular', 'new', 'series'] as const
-export type CatalogGroup = (typeof catalogGroups)[number]
+export type CatalogGroup = (typeof catalogGroups)[number] | 'movies'
 export interface MoviePreview {
   id: string
   slug: string

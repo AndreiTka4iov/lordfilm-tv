@@ -1,3 +1,4 @@
+'use client'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { getMovieDetail, type MoviePreview } from '@/entities/movie'
 import {

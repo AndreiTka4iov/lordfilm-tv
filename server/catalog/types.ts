@@ -1,4 +1,4 @@
-export const groups = ['popular', 'new', 'series'] as const
+export const groups = ['popular', 'new', 'series', 'movies'] as const
 export type Group = (typeof groups)[number]
 export interface Movie {
   id: string

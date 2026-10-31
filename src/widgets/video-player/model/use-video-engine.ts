@@ -1,6 +1,11 @@
 'use client'
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import type Hls from 'hls.js'
+import {
+  readAudioPreference,
+  saveAudioPreference,
+  preferredAudioIndex,
+} from './audio-preference'
 import { cdnLoader } from './cdn-loader'
 import type { Playback } from '@/entities/movie'
 
@@ -8,7 +13,10 @@ export function useVideoEngine(
   source: Playback,
   videoRef: RefObject<HTMLVideoElement | null>,
   startTime = 0,
+  seriesId?: string,
 ) {
+  const preferredAudio = useRef<string | null>(null)
+  const audioNames = useRef<string[]>([])
   const hlsRef = useRef<Hls | null>(null)
   const [playing, setPlaying] = useState(false)
   const [buffering, setBuffering] = useState(true)
@@ -23,6 +31,7 @@ export function useVideoEngine(
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    preferredAudio.current = seriesId ? readAudioPreference(seriesId) : null
     let active = true
     let lastUpdate = 0
     let restored = false
@@ -128,6 +137,28 @@ export function useVideoEngine(
             },
           })
           hlsRef.current = hls
+          const updateAudios = () => {
+            if (!active) return
+            const tracks = hls.audioTracks.slice(0, 32)
+            audioNames.current = tracks.map(
+              (track, index) => source.audioNames[index] || track.name || '',
+            )
+            setAudios(
+              tracks.map((_, index) => ({
+                value: String(index),
+                label: audioNames.current[index] || String(index + 1),
+              })),
+            )
+            const index = preferredAudioIndex(
+              audioNames.current,
+              preferredAudio.current,
+            )
+            const track = tracks[index]
+            if (track) {
+              hls.setAudioOption(track)
+              setAudio(String(index))
+            }
+          }
           hls.on(Engine.Events.MANIFEST_PARSED, () => {
             if (!active) return
             const cap = hls.levels.reduce(
@@ -141,25 +172,10 @@ export function useVideoEngine(
                 label: `${level.height}p`,
               })),
             )
-            setAudios(
-              hls.audioTracks.slice(0, 32).map((track, index) => ({
-                value: String(index),
-                label:
-                  source.audioNames[index] || track.name || String(index + 1),
-              })),
-            )
+            updateAudios()
             play()
           })
-          hls.on(Engine.Events.AUDIO_TRACKS_UPDATED, (_, data) => {
-            if (!active) return
-            setAudios(
-              data.audioTracks.slice(0, 32).map((track, index) => ({
-                value: String(index),
-                label:
-                  source.audioNames[index] || track.name || String(index + 1),
-              })),
-            )
-          })
+          hls.on(Engine.Events.AUDIO_TRACKS_UPDATED, updateAudios)
           hls.on(Engine.Events.AUDIO_TRACK_SWITCHED, (_, data) => {
             if (active) setAudio(String(data.id))
           })
@@ -193,7 +209,7 @@ export function useVideoEngine(
       video.removeAttribute('src')
       video.load()
     }
-  }, [source, videoRef, startTime])
+  }, [source, videoRef, startTime, seriesId])
   function togglePlay() {
     const video = videoRef.current
     if (!video) return
@@ -216,10 +232,17 @@ export function useVideoEngine(
     setQuality(value)
   }
   function setTrack(value: string) {
-    if (hlsRef.current) {
-      hlsRef.current.audioTrack = Number(value)
-      setAudio(value)
+    const hls = hlsRef.current
+    const index = Number(value)
+    const track = hls?.audioTracks[index]
+    if (!hls || !Number.isInteger(index) || !track) return
+    const name = audioNames.current[index]
+    if (seriesId && name) {
+      preferredAudio.current = name
+      saveAudioPreference(seriesId, name)
     }
+    hls.setAudioOption(track)
+    setAudio(value)
   }
   function toggleMute() {
     if (videoRef.current) {

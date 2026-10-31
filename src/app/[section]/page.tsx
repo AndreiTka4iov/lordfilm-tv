@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { SearchView } from '@/views/search'
+import { MoviesView } from '@/views/movies'
 import { SeriesView } from '@/views/series'
 import { HomeView } from '@/views/home'
 import { sectionPaths, isSectionPath } from '@/shared/config'
@@ -15,6 +16,7 @@ export default async function SectionPage({
   const { section } = await params
   if (!isSectionPath(section)) notFound()
   if (section === 'search') return <SearchView />
+  if (section === 'movies') return <MoviesView />
   if (section === 'series') return <SeriesView />
   return <HomeView section={section} />
 }

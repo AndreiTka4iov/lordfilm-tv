@@ -61,7 +61,23 @@ export function AppShell({
     focusSidebar()
   }
   return (
-    <div className="min-h-screen pl-[108px] sm:pl-[132px]">
+    <div
+      className="min-h-screen pl-[108px] sm:pl-[132px] has-[[data-sidebar][data-expanded=true]]:pl-[290px] sm:has-[[data-sidebar][data-expanded=true]]:pl-[314px] transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
+      onTransitionEnd={(event) => {
+        if (
+          event.target !== event.currentTarget ||
+          event.propertyName !== 'padding-left'
+        )
+          return
+        const target = document.activeElement
+        if (
+          target instanceof HTMLElement &&
+          target.matches('[data-movie-card]') &&
+          mainRef.current?.contains(target)
+        )
+          scrollFocusedBlock(target)
+      }}
+    >
       {sidebar}
       <Container size="xl" px={{ base: 'lg', md: 48 }}>
         {header}
@@ -84,7 +100,7 @@ export function AppShell({
                 scrollFocusedBlock(target)
             })
           }}
-          className="py-6 outline-none md:py-8"
+          className="py-6 outline-none md:py-8 [&:has([data-search-results])]:pt-0"
         >
           {children}
         </main>

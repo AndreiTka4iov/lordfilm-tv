@@ -34,8 +34,8 @@ android {
         applicationId = "tv.lordfilm.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.3.1"
         val sourceOrigin =
             providers.gradleProperty("lordfilmOrigin").getOrElse("https://lordfilmx13.ink")
         require(Regex("https://[a-zA-Z0-9.-]+(?::[0-9]+)?").matches(sourceOrigin))

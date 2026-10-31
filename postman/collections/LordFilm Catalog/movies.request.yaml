@@ -1,0 +1,7 @@
+{
+  '$kind': 'http-request',
+  'name': 'movies',
+  'url': '{{baseUrl}}/v1/catalog/pools/movies',
+  'method': 'GET',
+  'order': 3500,
+}

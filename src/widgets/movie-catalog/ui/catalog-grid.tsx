@@ -16,14 +16,19 @@ import { CatalogStage } from './catalog-stage'
 import { catalogFocusKey, useCatalogPreview } from '../model/catalog-preview'
 import { useMoviePool } from '../model/use-movie-pool'
 
-function SeriesGrid() {
-  const { state, retry } = useMoviePool('series')
+function CatalogGridContent({ group }: { group: 'series' | 'movies' }) {
+  const labels =
+    group === 'series' ? messages.seriesCatalog : messages.moviesCatalog
+  const historyKey =
+    group === 'series' ? 'seriesCatalogFocus' : 'moviesCatalogFocus'
+  const scope = `${group}-catalog`
+  const { state, retry } = useMoviePool(group)
   const { select: preview, focusedKey } = useCatalogPreview()
   const { listRef, visible } = useVisiblePosters(state.status === 'ready')
   useEffect(() => {
     if (state.status !== 'ready') return
     const params = new URLSearchParams(window.location.search)
-    const bookmark = window.history.state?.seriesCatalogFocus as
+    const bookmark = window.history.state?.[historyKey] as
       { id?: string } | undefined
     const id = params.get('focus') ?? bookmark?.id
     if (
@@ -41,17 +46,22 @@ function SeriesGrid() {
     const url = new URL(window.location.href)
     url.searchParams.delete('focus')
     window.history.replaceState(
-      { ...window.history.state, seriesCatalogFocus: { id } },
+      { ...window.history.state, [historyKey]: { id } },
       '',
       url,
     )
-  }, [state, listRef])
+  }, [state, listRef, historyKey])
   return (
     <div
-      data-series-catalog
+      data-series-catalog={group === 'series' ? '' : undefined}
+      data-movies-catalog={group === 'movies' ? '' : undefined}
       className="min-w-0"
       onKeyDown={(event) => {
-        if (!(event.target as HTMLElement).closest('[data-series-action]'))
+        if (
+          !(event.target as HTMLElement).closest(
+            '[data-series-action], [data-movies-action]',
+          )
+        )
           return
         if (event.key === 'ArrowLeft') {
           event.preventDefault()
@@ -68,10 +78,11 @@ function SeriesGrid() {
     >
       {state.status === 'error' ? (
         <Stack role="status" align="flex-start" gap="lg" py="xl">
-          <Text>{messages.seriesCatalog.error}</Text>
+          <Text>{labels.error}</Text>
           <Button
             radius="xl"
-            data-series-action
+            data-series-action={group === 'series' ? '' : undefined}
+            data-movies-action={group === 'movies' ? '' : undefined}
             onClick={() => {
               document
                 .getElementById('main-content')
@@ -86,12 +97,12 @@ function SeriesGrid() {
         <>
           <Text className="sr-only" role="status">
             {state.status === 'ready'
-              ? `${messages.seriesCatalog.selection}: ${state.items.length}`
-              : messages.seriesCatalog.loading}
+              ? `${labels.selection}: ${state.items.length}`
+              : labels.loading}
           </Text>
           <ul
             ref={listRef}
-            aria-label={messages.seriesCatalog.list}
+            aria-label={labels.list}
             aria-busy={state.status === 'loading'}
             onKeyDown={navigateMovieGrid}
             onFocusCapture={(event) => {
@@ -112,7 +123,7 @@ function SeriesGrid() {
                 window.history.replaceState(
                   {
                     ...window.history.state,
-                    seriesCatalogFocus: { id: card.dataset.movieId },
+                    [historyKey]: { id: card.dataset.movieId },
                   },
                   '',
                   window.location.href,
@@ -126,13 +137,11 @@ function SeriesGrid() {
                     <MovieCard
                       movie={movie}
                       onFocus={() =>
-                        preview(movie, catalogFocusKey('series-catalog', movie))
+                        preview(movie, catalogFocusKey(scope, movie))
                       }
-                      focused={
-                        focusedKey === catalogFocusKey('series-catalog', movie)
-                      }
+                      focused={focusedKey === catalogFocusKey(scope, movie)}
                       showPoster={visible.has(movie.id)}
-                      href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=series-catalog`}
+                      href={`/movie/?id=${movie.id}&slug=${encodeURIComponent(movie.slug)}&from=${scope}`}
                     />
                   </li>
                 ))
@@ -148,10 +157,17 @@ function SeriesGrid() {
   )
 }
 
-export function SeriesCatalog() {
+function CatalogGrid({ group }: { group: 'series' | 'movies' }) {
   return (
     <CatalogStage>
-      <SeriesGrid />
+      <CatalogGridContent group={group} />
     </CatalogStage>
   )
+}
+
+export function SeriesCatalog() {
+  return <CatalogGrid group="series" />
+}
+export function MoviesCatalog() {
+  return <CatalogGrid group="movies" />
 }

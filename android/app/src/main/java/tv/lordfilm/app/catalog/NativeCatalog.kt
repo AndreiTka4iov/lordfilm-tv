@@ -41,7 +41,7 @@ class NativeCatalog(private val origin: String, private val fetcher: HtmlFetcher
                 parameters[key] = decode(entry.getOrElse(1) { "" })
             }
         }
-        Regex("/v1/catalog/pools/(popular|new|series)/?").matchEntire(parts[0])?.let {
+        Regex("/v1/catalog/pools/(popular|new|series|movies)/?").matchEntire(parts[0])?.let {
             if (parameters.isNotEmpty()) throw SourceFailure(400)
             val group = it.groupValues[1]
             val year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR)
@@ -50,6 +50,7 @@ class NativeCatalog(private val origin: String, private val fetcher: HtmlFetcher
                         "popular" to "/top-100",
                         "new" to "/catalog/category/$year",
                         "series" to "/serialy",
+                        "movies" to "/filmy",
                     )
                     .getValue(group)
             val items =
